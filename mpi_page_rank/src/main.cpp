@@ -32,7 +32,9 @@ int main( int argv, const char* argc[] )
     gettimeofday( &start_time, NULL);
     PageRankSerial::calculatePageRank( *matrix, eigen_vect );
     gettimeofday( &end_time, NULL);
-    resultFile << "time: " << end_time.tv_sec - start_time.tv_sec << "s\n";
+    R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
+        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+    resultFile << "time: " <<  time_taken << "s\n";
     writePageRank( resultFile, eigen_vect );
 
     return 0;
