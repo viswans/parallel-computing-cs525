@@ -2,7 +2,6 @@
 #define __PAGERANK_CSR__
 
 #include <vector>
-#include <memory>
 #include <types.h>
 
 namespace PageRank {

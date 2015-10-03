@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ostream>
+#include <memory>
 
 #define ASSERT_EQUALS_MSG( arg1, arg2, msg )                            \
     if( (arg1) != (arg2) )  {                                           \

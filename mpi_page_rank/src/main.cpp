@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sys/time.h>
 #include <pagerank.h>
+#include <utils.h>
 
 enum HelpTypes { eFormat, eFileNotExist };
 void help( HelpTypes e )
@@ -25,12 +26,14 @@ int main( int argv, const char* argc[] )
     CSRMatrix::CPtr matrix( CSRMatrix::readFromStream( graphFile ) );
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
-    RVec eigen_vect( matrix->numColumns(), 1.0/matrix->numColumns() );
+    N num_nodes = matrix->numColumns();
+    RVec eigen_vect( num_nodes, 1.0/num_nodes );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
     PageRankSerial::calculatePageRank( *matrix, eigen_vect );
     gettimeofday( &end_time, NULL);
     resultFile << "time: " << end_time.tv_sec - start_time.tv_sec << "s\n";
+    writePageRank( resultFile, eigen_vect );
 
     return 0;
 }
