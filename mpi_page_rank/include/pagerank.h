@@ -2,7 +2,6 @@
 #define __PAGERANK_PAGERANK__
 
 #include <csr.h>
-// #include <partition.h>
 
 namespace PageRank {
 
@@ -29,18 +28,6 @@ namespace PageRank {
             RVec& input,
             const ConvergenceCriterion& crit = ConvergenceCriterion());
     };
-
-    // class PageRankMPI
-    // {
-    //  public:
-    //     PageRankMPI(
-    //         const CSRMatrix::CPtr& matrix_,
-    //         const Partition::CPtr& parition_info_);
-    //  private:
-    //     CSRMatrix::CPtr matrix;
-    //     Partition::CPtr& partition_info;
-    //
-    // }
 
 
 } // end namespace PageRank
