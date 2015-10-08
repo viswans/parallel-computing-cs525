@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include <sys/time.h>
 #include <pagerank.h>
 #include <utils.h>
