@@ -2,21 +2,9 @@
 #define __PAGERANK_PAGERANK__
 
 #include <csr.h>
+#include <utils.h>
 
 namespace PageRank {
-
-    const int defaultMaxIters = 1000;
-    const double defaultTolerance = 1e-10;
-
-    struct ConvergenceCriterion
-    {
-        double tolerance;
-        unsigned int maxIterations;
-        ConvergenceCriterion(
-            int maxiters = defaultMaxIters,
-            double tol = defaultTolerance )
-            : tolerance( tol ), maxIterations( maxiters ) {}
-    };
 
     class PageRankSerial
     {

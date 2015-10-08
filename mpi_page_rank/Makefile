@@ -7,8 +7,8 @@ EXE       := pagerank
 
 ## Add your source files here ##
 SRC_DIR   := src
-MPI_SRC   := $(wildcard $(SRC_DIR)/*.mpicpp)
-CPP_SRC   := $(wildcard $(SRC_DIR)/*.cpp)
+MPI_SRC   := $(wildcard $(SRC_DIR)/mpi/*.cpp)
+CPP_SRC   := $(wildcard $(SRC_DIR)/cpp/*.cpp)
 ## End of source files lists ##
 
 OBJ_DIR   := obj

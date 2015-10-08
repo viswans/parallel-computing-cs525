@@ -8,8 +8,9 @@ namespace PageRank {
     struct ProcessPartitionInfo
     {
         // snd_info[i] - all elements to send to proc i
-        std::vector< NVec > snd_info;
         // rx_info[i] - all elements to receive from proc i
+        N num_columns_original_matrix;
+        std::vector< NVec > snd_info;
         std::vector< NVec > rx_info;
     };
 
