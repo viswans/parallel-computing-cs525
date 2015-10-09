@@ -11,10 +11,9 @@ Partition::CPtr Partition::createFromPartnVector(
     // num_partitions, with each element set to a pointer containing
     // empty NVec Phew!!
     N num_nodes = partition_map->size();
+    std::cout << "DEBUG: Number of nodes = " << num_nodes << "\n";
     VecNVecPtr partitions( new std::vector< NVecPtr >(
                 num_partitions, NVecPtr( new NVec() ) ) );
-    NodePartitionVecPtr node_part_info(
-            new std::vector< NodePartitionInfo >( num_nodes ) );
     for( N i = 0 ; i < num_nodes; ++i  ) {
         N pid = partition_map->at(i);
         partitions->at( pid )->push_back( i );
@@ -56,6 +55,9 @@ Partition::CPtr Partition::createFromStream(
         num_parts = ( num_parts < temp )? temp : num_parts;
         vec_ptr->push_back( temp );
     }
+    std::cout << "DEBUG: Number of partitions = " << num_parts << "\n";
+    // account for 0 indexing of partitions
+    num_parts ++;
     return createFromPartnVector( vec_ptr, num_parts );
 
 }

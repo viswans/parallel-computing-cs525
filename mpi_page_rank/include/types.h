@@ -4,6 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <memory>
+#include <cassert>
 
 #define ASSERT_EQUALS_MSG( arg1, arg2, msg )                            \
     if( (arg1) != (arg2) )  {                                           \

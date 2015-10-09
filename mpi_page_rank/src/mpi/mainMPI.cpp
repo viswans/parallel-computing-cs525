@@ -37,6 +37,7 @@ int mainMPI( int argc, char* argv[] )
     proc_info.numprocs = MPI::COMM_WORLD.Get_size();
     proc_info.rank = MPI::COMM_WORLD.Get_rank();
     MPI::Get_processor_name( proc_info.processor_name, proc_info.namelen);
+    std::cout << "DEBUG: Hello!!\n";
     std::cout << "DEBUG: Process " << proc_info.rank << " on " <<
         proc_info.processor_name <<  " out of " << proc_info.numprocs << "\n";
 
@@ -47,15 +48,18 @@ int mainMPI( int argc, char* argv[] )
     if( argc != 3 ) { help(eFormat); finalize(); }
     CSRMatrix::CPtr matrix;
     Partition::CPtr partition;
+    std::vector< NodePartitionInfo > partition_map;
     DO_ONLY_AT_RANK0
     {
         std::fstream graphFile( argv[1] ), partitionFile( argv[2] );
         if( !graphFile || !partitionFile ) { help(eFileNotExist); return finalize(); }
         matrix =  CSRMatrix::readFromStream( graphFile );
         partition = Partition::createFromStream( partitionFile ) ;
+        partition_map.resize( partition->getNumNodes() );
     }
 
-    PreProcOutput pre = PageRankMPI::preprocess( matrix, partition );
+    PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map );
+    return finalize();
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
 

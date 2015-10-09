@@ -5,6 +5,11 @@
 
 namespace PageRank {
 
+    struct NodePartitionInfo
+    {
+        N partition_id, row_id;
+    };
+
     struct ProcessPartitionInfo
     {
         // snd_info[i] - all elements to send to proc i
@@ -13,11 +18,8 @@ namespace PageRank {
         N num_columns_original_matrix;
         std::vector< NVec > snd_info;
         std::vector< NVec > rx_info;
-    };
-
-    struct NodePartitionInfo
-    {
-        N partition_id, row_id;
+        NVec snd_disp;
+        NVec rx_disp;
     };
 
     class Partition
@@ -26,8 +28,6 @@ namespace PageRank {
         typedef std::shared_ptr< const Partition > CPtr;
         typedef std::shared_ptr< NVec > NVecPtr;
         typedef std::shared_ptr< std::vector< NVecPtr > > VecNVecPtr;
-        typedef std::shared_ptr< std::vector< NodePartitionInfo > >
-            NodePartitionVecPtr;
 
         static CPtr createFromStream( std::istream& iss );
 

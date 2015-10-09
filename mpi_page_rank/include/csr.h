@@ -34,6 +34,11 @@ namespace PageRank {
         void multiply(
             const RVec& input_vector, RVec& output_vector ) const;
 
+        std::shared_ptr< std::vector< CSRMatrixEntry > >
+        getMatrixEntries() const { return entries; }
+
+        NVecPtr getRowPtr() const { return row_ptr; }
+
      private:
         CSRMatrix(
             N nrows_, N ncolumns_,
@@ -42,7 +47,7 @@ namespace PageRank {
 
          unsigned int nrows, ncolumns;
          std::shared_ptr< std::vector<CSRMatrixEntry> > entries;
-         std::shared_ptr< const NVec > row_ptr;
+         NVecPtr row_ptr;
     };
 
 } // end namespace pagerank

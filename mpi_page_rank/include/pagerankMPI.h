@@ -19,7 +19,8 @@ namespace PageRank {
      public:
         static PreProcOutput preprocess(
             const CSRMatrix::CPtr matrix,
-            const Partition::CPtr partition);
+            const Partition::CPtr partition,
+            std::vector< NodePartitionInfo >& partition_map );
 
         static void calculatePageRank (
             const CSRMatrix& matrix,
