@@ -10,6 +10,7 @@ namespace PageRank {
     {
         N column_idx;
         R value;
+        CSRMatrixEntry(): column_idx(0), value(0.0) {}
         CSRMatrixEntry( N column_idx_, R value );
     };
 
@@ -18,6 +19,12 @@ namespace PageRank {
      public:
         typedef std::shared_ptr< const CSRMatrix > CPtr;
         static CPtr readFromStream( std::istream& iss );
+        static CPtr create(
+            N num_cols,
+            const RVec& values,
+            const NVec& cols,
+            const NVec& row_ptrs );
+
         N numRows() const { return nrows; }
         N numColumns() const { return ncolumns; }
 

@@ -27,6 +27,26 @@ CSRMatrix::CSRMatrix(
     writeToStream( std::cout  );
 }
 
+CSRMatrix::CPtr CSRMatrix::create(
+    N num_cols,
+    const RVec& values,
+    const NVec& cols,
+    const NVec& row_ptrs )
+{
+     assert( values.size() == cols.size() );
+     N size = values.size();
+     NVecPtr row_ptr( new NVec( row_ptrs ) );
+     std::shared_ptr< std::vector< CSRMatrixEntry > > entries(
+             new std::vector< CSRMatrixEntry >( size ));
+     for( N i = 0; i < size; ++i  )
+     {
+          entries->at(i).value = values[i];
+          entries->at(i).column_idx = cols[i];
+     }
+
+     return CPtr( new CSRMatrix( row_ptrs.size() -1, num_cols, entries, row_ptr) );
+}
+
 void CSRMatrix::writeToStream( std::ostream& oss ) const
 {
     oss << "DEBUG: # Rows = " << nrows << " # Cols = " << ncolumns << "\n";

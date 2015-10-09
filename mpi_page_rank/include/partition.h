@@ -36,7 +36,6 @@ namespace PageRank {
         N       getNumNodes()      const { return num_nodes; }
         N       getNumPartitions() const { return num_partitions; }
 
-        NodePartitionVecPtr getPartition() const { return node_partition_vec; }
 
      private:
         static CPtr createFromPartnVector(
@@ -44,13 +43,11 @@ namespace PageRank {
 
         Partition(
             const NVecPtr& partition_map,
-            const NodePartitionVecPtr& node_partition_vec,
             const VecNVecPtr& nodes_per_partition,
             N num_partitions_,
             N num_nodes);
 
         NVecPtr partition_map;
-        NodePartitionVecPtr node_partition_vec;
         VecNVecPtr nodes_per_partition;
         N num_partitions;
         N num_nodes;

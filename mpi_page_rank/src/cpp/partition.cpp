@@ -18,29 +18,24 @@ Partition::CPtr Partition::createFromPartnVector(
     for( N i = 0 ; i < num_nodes; ++i  ) {
         N pid = partition_map->at(i);
         partitions->at( pid )->push_back( i );
-        node_part_info->at( i ).partition_id = pid;
-        node_part_info->at( i ).row_id = partitions->at(pid)->size();
     }
     return CPtr( new Partition(
-                partition_map, node_part_info, partitions,
+                partition_map, partitions,
                 num_partitions, num_nodes )  );
 }
 
 Partition::Partition(
     const NVecPtr& partition_map_,
-    const NodePartitionVecPtr& node_partition_vec_,
     const VecNVecPtr& nodes_per_partition_,
     N num_partitions_,
     N num_nodes_)
     : partition_map( partition_map_ ),
-    node_partition_vec( node_partition_vec_ ),
     nodes_per_partition( nodes_per_partition_ ),
     num_partitions( num_partitions_ ),
     num_nodes( num_nodes_ )
 {
     // sanity checks
     assert( num_nodes == partition_map->size());
-    assert( num_nodes == node_partition_vec->size() );
     assert( num_partitions == nodes_per_partition->size() );
 }
 
