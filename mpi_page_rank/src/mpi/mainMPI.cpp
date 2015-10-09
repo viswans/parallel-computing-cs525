@@ -59,7 +59,7 @@ int mainMPI( int argc, char* argv[] )
     }
 
     PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map );
-    return finalize();
+    MPI::COMM_WORLD.Barrier();
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
 

@@ -14,6 +14,15 @@ namespace {
         std::vector< std::set< N > > dep_set;
         DependencySet( N num_partitions )
             : dep_set( num_partitions ) {}
+
+        // findOffset finds the number of entries
+        // before elements of partition starts
+        N findOffset( N partition ) const
+        {
+            N ret = 0, i= 0;
+            for( ; i != partition; ++i ) ret += dep_set[i].size();
+            return ret;
+        }
     };
 }
 
@@ -76,9 +85,54 @@ PreProcOutput PageRankMPI::preprocess(
                 printf("DEBUG: Partition %u depends on %lu "
                         "elements from Partition %u\n",
                         i , dependencies[i].dep_set[j].size() , j);
+
+        for( N i = 0; i < num_partitions; ++i )
+        {
+            typedef std::set< N >::iterator It;
+            std::set< N >& set_i = dependencies[i].dep_set[i];
+            It it = set_i.begin(), end = set_i.end();
+            N count = 0;
+            for( ; it != end; ++it ) {
+                N old_row = *it;
+                partition_map[old_row].partition_id = row_partition[old_row];
+                partition_map[old_row].row_id = count;
+                ++count;
+            }
+            count = 0;
+            std::map< N, N> big_to_small_map;
+            for( N j = 0; j < num_partitions; ++j )
+            {
+                std::set< N >& set_ij = dependencies[i].dep_set[j];
+                It it = set_ij.begin(), end = set_ij.end();
+                for( ; it != end; ++it, ++count )
+                    big_to_small_map.insert( std::make_pair( *it, count ) );
+            }
+
+            NVec& cols = matrices[i].col_idx;
+            for( N j = 0; j < cols.size(); ++j )
+                cols[j] = big_to_small_map[cols[j]];
+        }
+
     }
 
-    return PreProcOutput();
+    // need number of vals, number of rows, number of columns
+    // number of partitions?
+    N buffer[4];
+    MPI::COMM_WORLD.Recv( buffer, 4, MPI::INT, 0, 0 ); // tagging as 0th comm
+    // I need the matrix
+    N num_vals = buffer[0], num_rows = buffer[1],
+      num_columns = buffer[2], num_partitions = buffer[3];
+
+    RVec vals( num_vals );
+    NVec col_idxs( num_vals ), rows( num_rows + 1 );
+    MPI::COMM_WORLD.Recv( &vals[0], num_vals, MPI::DOUBLE, 0, 1 );
+    MPI::COMM_WORLD.Recv( &col_idxs[0], num_vals, MPI::UNSIGNED, 0, 2);
+    MPI::COMM_WORLD.Recv( &rows[0], num_rows + 1, MPI::UNSIGNED, 0, 3);
+    PreProcOutput p;
+    p.matrix = CSRMatrix::create( num_columns, vals, col_idxs, rows );
+
+
+    return p;
 
 
 }
