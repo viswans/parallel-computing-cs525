@@ -9,7 +9,7 @@ EXE       := pagerank
 SRC_DIR   := src
 MPI_DIR   := $(SRC_DIR)/mpi
 CPP_DIR   := $(SRC_DIR)/cpp
-# MPI_SRC   := $(wildcard $(MPI_DIR)/*.cpp)
+MPI_SRC   := $(wildcard $(MPI_DIR)/*.cpp)
 CPP_SRC   := $(wildcard $(CPP_DIR)/*.cpp)
 ## End of source files lists ##
 
