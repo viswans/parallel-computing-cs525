@@ -9,6 +9,7 @@ namespace PageRank {
     {
         // snd_info[i] - all elements to send to proc i
         // rx_info[i] - all elements to receive from proc i
+        typedef std::shared_ptr< const ProcessPartitionInfo > CPtr;
         N num_columns_original_matrix;
         std::vector< NVec > snd_info;
         std::vector< NVec > rx_info;

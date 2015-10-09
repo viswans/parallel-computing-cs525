@@ -15,10 +15,10 @@ void help( HelpTypes e )
         std::cout << "Error: Either graph file or partition file could not be opened\n";
 }
 
-int mainSerial( int argv, const char* argc[] )
+int mainSerial( int argc, const char* argv[] )
 {
-    if( argv != 3 ) { help(eFormat); return 0; }
-    std::fstream graphFile(argc[1]), partitionFile(argc[2]);
+    if( argc != 3 ) { help(eFormat); return 0; }
+    std::fstream graphFile(argv[1]), partitionFile(argv[2]);
     if( !graphFile || !partitionFile ) { help(eFileNotExist); return 0; }
     std::fstream resultFile( "pagerank.result", std::ios::out );
 

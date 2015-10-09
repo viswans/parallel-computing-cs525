@@ -1,28 +1,27 @@
-#include <pagerank.h>
+#include <pagerankMPI.h>
 #include <partition.h>
 #include <main.h>
 #include <mpi.h>
+#include <fstream>
+#include <cmath>
+#include <sys/time.h>
 
-enum HelpTypes { eFormat, eFileNotExist };
-void help( HelpTypes e )
-{
-    if( e == eFormat )
-        std::cout << "Format: ./pagerank <graph.txt> <graph-partition.txt>\n";
-    else if( e == eFileNotExist )
-        std::cout << "Error: Either graph file or partition file could not be opened\n";
-}
+// Global variable
+// Just initialized and then used read only
+ProcessInfo proc_info;
 
 int finalize() {
-    MPI_finalize();
+    MPI::Finalize();
     return 0;
 }
 
 void writeToResult(
-    N rank,
+    PageRank::N rank,
     timeval start_time,
     timeval end_time,
-    const RVec& eigen_vect)
+    const PageRank::RVec& eigen_vect)
 {
+    using namespace PageRank;
     if( rank ) return;
     // do only if rank is 0
     R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
@@ -32,45 +31,45 @@ void writeToResult(
     writePageRank( resultFile, eigen_vect );
 }
 
-int mainMPI( int argv, const char* argc[] )
+int mainMPI( int argc, char* argv[] )
 {
-    int numprocs, rank, namelen;
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Get_processor_name(processor_name, &namelen);
-    std::cout << "DEBUG: Process " << rank << " on " <<
-        processor_name <<  " out of " << numprocs << "\n";
+    MPI::Init(argc, argv);
+    proc_info.numprocs = MPI::COMM_WORLD.Get_size();
+    proc_info.rank = MPI::COMM_WORLD.Get_rank();
+    MPI::Get_processor_name( proc_info.processor_name, proc_info.namelen);
+    std::cout << "DEBUG: Process " << proc_info.rank << " on " <<
+        proc_info.processor_name <<  " out of " << proc_info.numprocs << "\n";
 
     // ========= end of diagnostic output ========================
 
-    if( argv != 3 ) { help(eFormat); return finalize(); }
-    if( !graphFile || !partitionFile ) { help(eFileNotExist); return finalize(); }
-
     using namespace PageRank;
+    // if not enough arguments fail
+    if( argc != 3 ) { help(eFormat); finalize(); }
     CSRMatrix::CPtr matrix;
     Partition::CPtr partition;
-    if( rank == 0 )
+    DO_ONLY_AT_RANK0
     {
-        std::fstream graphFile(argc[1]), partitionFile(argc[2]);
+        std::fstream graphFile( argv[1] ), partitionFile( argv[2] );
+        if( !graphFile || !partitionFile ) { help(eFileNotExist); return finalize(); }
         matrix =  CSRMatrix::readFromStream( graphFile );
         partition = Partition::createFromStream( partitionFile ) ;
     }
-    CSRMatrix::CPtr localmatrix;
-    ProcessPartitionInfo partition_information;
-    PreprocessMPI::preprocess(
-            matrix, partition, localmatrix, partition_information );
+
+    PreProcOutput pre = PageRankMPI::preprocess( matrix, partition );
+    CSRMatrix::CPtr localmatrix = pre.matrix;
+    ProcessPartitionInfo::CPtr part_info = pre.partition_info;
 
     N num_nodes = localmatrix->numColumns();
-    N num_orig_columns = partition_information.num_columns_original_matrix;
+    N num_orig_columns = part_info->num_columns_original_matrix;
     RVec initial_vect( num_nodes, 1.0/sqrt( num_orig_columns ) );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-    PageRankMPI::calculatePageRank( partition_information, *initial_vect );
+    PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vect );
     gettimeofday( &end_time, NULL);
-    if( rank == 0 ) // gahter and store in eigen vector
-    writeToResult( rank, start_time, end_time, eigen_vect)
+
+    // if( proc_info.rank == 0 ) // gahter and store in eigen vector
+    RVec eigen_vect;
+    writeToResult( proc_info.rank, start_time, end_time, eigen_vect);
     return finalize();
 }
 

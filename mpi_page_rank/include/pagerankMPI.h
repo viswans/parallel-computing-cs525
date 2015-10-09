@@ -4,18 +4,30 @@
 #include <csr.h>
 #include <partition.h>
 #include <utils.h>
+#include <typesMPI.h>
 
 namespace PageRank {
 
+    struct PreProcOutput
+    {
+        CSRMatrix::CPtr matrix;
+        ProcessPartitionInfo::CPtr partition_info;
+    };
+
     class PageRankMPI
     {
-        static std::pair< CSRMatrix::CPtr , ProcessParitionInfo::CPtr >
-            preprocess(
-            const std::string& matrix_file_name,
-            const std::string& partition_file_name );
+     public:
+        static PreProcOutput preprocess(
+            const CSRMatrix::CPtr matrix,
+            const Partition::CPtr partition);
 
-        static void
-    }
+        static void calculatePageRank (
+            const CSRMatrix& matrix,
+            const ProcessPartitionInfo& partition,
+            RVec& input,
+            const ConvergenceCriterion& crit = ConvergenceCriterion());
+
+    };
 }
 
 #endif

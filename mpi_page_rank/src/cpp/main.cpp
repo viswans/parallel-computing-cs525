@@ -1,11 +1,11 @@
 
 #include <main.h>
 
-int main( int argv, const char* argc[] )
+int main( int argc, const char* argv[] )
 {
     #ifndef PAGERANK_MPI
-    return mainSerial( argv, argc );
+    return mainSerial( argc, argv );
     #else
-    return mainMPI( argv, argc );
+    return mainMPI( argc, argv );
     #endif
 }
