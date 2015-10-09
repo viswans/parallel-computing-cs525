@@ -5,6 +5,7 @@
 // use this macro for doing stateful operations
 // which return void
 #define DO_ONLY_AT_RANK0 if(proc_info.rank == 0)
+#define DO_IF_NOT_RANK0  if(proc_info.rank != 0)
 
 // open namespace
 struct ProcessInfo

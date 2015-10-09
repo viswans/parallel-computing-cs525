@@ -11,6 +11,7 @@
 ProcessInfo proc_info;
 
 int finalize() {
+    std::cout << "DEBUG: Finalizing\n";
     MPI::Finalize();
     return 0;
 }
@@ -59,7 +60,8 @@ int mainMPI( int argc, char* argv[] )
     }
 
     PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map );
-    MPI::COMM_WORLD.Barrier();
+    std::cout << "Preprocess done\n";
+    return finalize();
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
 

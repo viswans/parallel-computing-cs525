@@ -37,6 +37,7 @@ PreProcOutput PageRankMPI::preprocess(
     // preprocess here
     // find new CSRMatrix for all the different processes
     // find dependencies between processes
+    PreProcOutput p;
 
     DO_ONLY_AT_RANK0
     {
@@ -107,31 +108,66 @@ PreProcOutput PageRankMPI::preprocess(
                 for( ; it != end; ++it, ++count )
                     big_to_small_map.insert( std::make_pair( *it, count ) );
             }
+            N num_columns = count;
 
             NVec& cols = matrices[i].col_idx;
             for( N j = 0; j < cols.size(); ++j )
                 cols[j] = big_to_small_map[cols[j]];
+
+            // send basic matrix information
+            // then send CSR
+            N buffer[4];
+            N num_vals = matrices[i].col_idx.size();
+            buffer[0] = num_vals;
+            buffer[1] = matrices[i].row_ptrs.size() -1;
+            buffer[2] = num_columns;
+            buffer[3] = num_partitions;
+            std::cout << "DEBUG: Rank = " << i << std::endl;
+            std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << matrices[i].row_ptrs.size() - 1<<
+                " num_columns = " << num_columns << " num_partitions = " << num_partitions << "\n";
+            if( i != 0 ) { // only send information if it is not available with me
+            MPI::COMM_WORLD.Send( buffer, 4, MPI::UNSIGNED, i, 0 );
+            MPI::COMM_WORLD.Send( &matrices[i].values[0],
+                    num_vals, MPI::DOUBLE, i, 1);
+            MPI::COMM_WORLD.Send( &matrices[i].col_idx[0],
+                    num_vals, MPI::UNSIGNED, i, 2);
+            MPI::COMM_WORLD.Send( &matrices[i].row_ptrs[0],
+                    buffer[1] + 1, MPI::UNSIGNED, i, 3);
+            }
+            else
+            {
+                p.matrix = CSRMatrix::create( num_columns,
+                        matrices[i].values,
+                        matrices[i].col_idx,
+                        matrices[i].row_ptrs);
+            }
         }
 
     }
 
     // need number of vals, number of rows, number of columns
     // number of partitions?
+    DO_IF_NOT_RANK0 {
+
     N buffer[4];
-    MPI::COMM_WORLD.Recv( buffer, 4, MPI::INT, 0, 0 ); // tagging as 0th comm
+    MPI::COMM_WORLD.Recv( buffer, 4, MPI::UNSIGNED, 0, 0 ); // tagging as 0th comm
     // I need the matrix
     N num_vals = buffer[0], num_rows = buffer[1],
       num_columns = buffer[2], num_partitions = buffer[3];
+    std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << num_rows <<
+        " num_columns = " << num_columns << " num_partitions = " << num_partitions <<
+        " rank = " << proc_info.rank << "\n";
 
     RVec vals( num_vals );
     NVec col_idxs( num_vals ), rows( num_rows + 1 );
     MPI::COMM_WORLD.Recv( &vals[0], num_vals, MPI::DOUBLE, 0, 1 );
     MPI::COMM_WORLD.Recv( &col_idxs[0], num_vals, MPI::UNSIGNED, 0, 2);
     MPI::COMM_WORLD.Recv( &rows[0], num_rows + 1, MPI::UNSIGNED, 0, 3);
-    PreProcOutput p;
     p.matrix = CSRMatrix::create( num_columns, vals, col_idxs, rows );
 
+    }
 
+    std::cout << "DEBUG: Preprocess finished @ " << proc_info.rank << "\n";
     return p;
 
 

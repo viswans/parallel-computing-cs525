@@ -26,13 +26,10 @@ namespace PageRank {
     {
      public:
         typedef std::shared_ptr< const Partition > CPtr;
-        typedef std::shared_ptr< NVec > NVecPtr;
-        typedef std::shared_ptr< std::vector< NVecPtr > > VecNVecPtr;
 
         static CPtr createFromStream( std::istream& iss );
 
         NVecPtr getPartitionMap() const { return partition_map; }
-        NVecPtr getNodesOfPartition( N i ) const ;
         N       getNumNodes()      const { return num_nodes; }
         N       getNumPartitions() const { return num_partitions; }
 
@@ -43,12 +40,10 @@ namespace PageRank {
 
         Partition(
             const NVecPtr& partition_map,
-            const VecNVecPtr& nodes_per_partition,
             N num_partitions_,
             N num_nodes);
 
         NVecPtr partition_map;
-        VecNVecPtr nodes_per_partition;
         N num_partitions;
         N num_nodes;
     };
