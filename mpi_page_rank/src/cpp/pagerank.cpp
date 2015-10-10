@@ -1,36 +1,11 @@
 #include <pagerank.h>
 #include <cmath>
 #include <cassert>
+#include <utils.h>
 
 #include <iostream>
 
 using namespace PageRank;
-
-namespace {
-    // utility functions
-    void normalize( RVec& vect ) {
-        double squared_norm = 0;
-        for(unsigned int i= 0; i < vect.size(); ++i)
-            squared_norm += vect[i]* vect[i];
-
-        double norm_2 = sqrt(squared_norm);
-        for(unsigned int i= 0; i < vect.size(); ++i)
-            vect[i] /= norm_2;
-    }
-
-    double norm_diff(
-        const RVec& v1,
-        const RVec& v2 )
-    {
-        double norm_diff = 0;
-        for( unsigned int i = 0; i < v1.size(); ++i )
-        {
-             double diff = v1[i] - v2[i];
-             norm_diff += diff * diff;
-        }
-        return sqrt( norm_diff );
-    }
-}
 
 void PageRankSerial::calculatePageRank (
     const CSRMatrix& matrix,
@@ -44,8 +19,8 @@ void PageRankSerial::calculatePageRank (
     while( ++i < criterion.maxIterations &&
             toldiff > criterion.tolerance ) {
         matrix.multiply( input, output );
-        normalize( output );
-        toldiff = norm_diff( input, output );
+        Utils::normalize( output );
+        toldiff = Utils::normOfDiff( input, output );
         // std::cout << "DEBUG: output = " << output <<
         //    "toldiff = " << toldiff << "\n";
         input = output;

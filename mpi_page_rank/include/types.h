@@ -2,7 +2,7 @@
 #define __PAGERANK_TYPES__
 
 #include <vector>
-#include <ostream>
+#include <iostream>
 #include <memory>
 #include <cassert>
 

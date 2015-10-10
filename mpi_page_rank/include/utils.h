@@ -17,7 +17,19 @@ namespace PageRank {
             : tolerance( tol ), maxIterations( maxiters ) {}
     };
 
-void writePageRank( std::ostream& oss, const RVec& page_rank_weight );
+    class Utils
+    {
+     public:
+        static void writePageRank(
+                std::ostream& oss,
+                const RVec& page_rank_weight );
+
+        static R sumOfSquares( const RVec& input );
+        // normOfDiff only for vectors of same size
+        static R normOfDiff( const RVec& v1, const RVec& v2 );
+        static void normalize( RVec& input );
+
+    };
 }
 
 

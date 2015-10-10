@@ -40,7 +40,7 @@ void writeToResult(
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     std::fstream resultFile( "pagerank.result", std::ios::out );
     resultFile << "time: " <<  time_taken << "s\n";
-    writePageRank( resultFile, eigen_vect );
+    Utils::writePageRank( resultFile, eigen_vect );
 }
 
 int mainMPI( int argc, char* argv[] )
@@ -75,7 +75,6 @@ int mainMPI( int argc, char* argv[] )
     std::cout << "DEBUG: Preprocess done\n";
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
-
     N num_nodes = localmatrix->numColumns();
     N num_orig_columns = part_info->num_columns_original_matrix;
     RVec initial_vect( num_nodes, 1.0/sqrt( num_orig_columns ) );
