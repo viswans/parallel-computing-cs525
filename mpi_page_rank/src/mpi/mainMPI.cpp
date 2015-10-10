@@ -16,6 +16,17 @@ int finalize() {
     return 0;
 }
 
+// Just for debugging
+void checkDataStructures( const PageRank::PreProcOutput& pre )
+{
+    assert( pre.partition_info->snd_disp.size() == pre.partition_info->rx_disp.size() );
+    std::cout << "DEBUG: Orig columns = "
+        << pre.partition_info->num_columns_original_matrix
+        << ", Num partitions = "
+        <<  2*pre.partition_info->snd_disp.size() -
+        pre.partition_info->rx_disp.size() << "\n";
+}
+
 void writeToResult(
     PageRank::N rank,
     timeval start_time,
@@ -60,8 +71,8 @@ int mainMPI( int argc, char* argv[] )
     }
 
     PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map );
-    std::cout << "Preprocess done\n";
-    return finalize();
+    checkDataStructures( pre );
+    std::cout << "DEBUG: Preprocess done\n";
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
 

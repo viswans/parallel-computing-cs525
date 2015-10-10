@@ -1,176 +1,23 @@
 #include <pagerankMPI.h>
-#include <set>
 #include <mpi.h>
-
 
 using namespace PageRank;
 
-namespace {
-    struct TempCSR {
-        RVec values; NVec col_idx; NVec row_ptrs;
-    };
-
-    struct DependencySet {
-        std::vector< std::set< N > > dep_set;
-        DependencySet( N num_partitions )
-            : dep_set( num_partitions ) {}
-
-        // findOffset finds the number of entries
-        // before elements of partition starts
-        N findOffset( N partition ) const
-        {
-            N ret = 0, i= 0;
-            for( ; i != partition; ++i ) ret += dep_set[i].size();
-            return ret;
-        }
-    };
+void copyToSendBuffer(
+    const RVec& input,
+    const NVec& snd_vals,
+    RVec& snd_buf )
+{
+    ASSERT_EQUALS( snd_vals.size(), snd_buf.size() );
+    N i = 0, end = snd_vals.size();
+    for( ; i < end ; ++i ) snd_buf[i] = input[snd_vals[i]];
 }
 
-PreProcOutput PageRankMPI::preprocess(
-    const CSRMatrix::CPtr matrix,
-    const Partition::CPtr partition,
-    std::vector< NodePartitionInfo >& partition_map )
+void sanityCheck( const NVec& snd_vals, N num_rows )
 {
-    // matrix and partition information => construct
-    // the necessary data
-
-    // preprocess here
-    // find new CSRMatrix for all the different processes
-    // find dependencies between processes
-    PreProcOutput p;
-
-    DO_ONLY_AT_RANK0
-    {
-        N num_partitions = partition->getNumPartitions();
-        std::vector < TempCSR > matrices( num_partitions );
-        std::vector < ProcessPartitionInfo > proc_partitions( num_partitions );
-        // initialize dependency set to contain num_partitions elements
-        // and each guy in turn initializes its own vector
-        std::vector < DependencySet > dependencies(
-                num_partitions, DependencySet( num_partitions ) );
-
-        const NVec& row_partition = *(partition->getPartitionMap());
-        const std::vector< CSRMatrixEntry >& entries = *(matrix->getMatrixEntries());
-        const NVec& row_ptrs = *(matrix->getRowPtr());
-        ASSERT_EQUALS( row_partition.size(), matrix->numRows() );
-
-        // initialize all row_vecs to have 0
-        for( N i = 0; i < num_partitions; ++i )
-            matrices[i].row_ptrs.push_back(0);
-
-        // create all the CSRs albeit with not the process specific
-        // information
-        for( N i = 0; i < matrix->numRows(); ++i )
-        {
-            N partition_of_i = row_partition[i];
-            NVec& row_vec = matrices[partition_of_i].row_ptrs;
-            NVec& col_vec = matrices[partition_of_i].col_idx;
-            RVec& val_vec = matrices[partition_of_i].values;
-
-            for( N j = row_ptrs[i]; j < row_ptrs[i+1]; ++j  )
-            {
-                // for each element in the matrix
-                // add it to the tempCSR structure
-                N column = entries[j].column_idx;
-                col_vec.push_back( column );
-                val_vec.push_back( entries[j].value );
-                // add column to the set of dependent nodes from process containing row i
-                // to process row j
-                dependencies[partition_of_i].dep_set[row_partition[column]].insert( column );
-            }
-            row_vec.push_back( col_vec.size() );
-        }
-
-        for( N i = 0; i < num_partitions; ++i  )
-            for( N j = 0; j < num_partitions; ++j )
-                printf("DEBUG: Partition %u depends on %lu "
-                        "elements from Partition %u\n",
-                        i , dependencies[i].dep_set[j].size() , j);
-
-        for( N i = 0; i < num_partitions; ++i )
-        {
-            typedef std::set< N >::iterator It;
-            std::set< N >& set_i = dependencies[i].dep_set[i];
-            It it = set_i.begin(), end = set_i.end();
-            N count = 0;
-            for( ; it != end; ++it ) {
-                N old_row = *it;
-                partition_map[old_row].partition_id = row_partition[old_row];
-                partition_map[old_row].row_id = count;
-                ++count;
-            }
-            count = 0;
-            std::map< N, N> big_to_small_map;
-            for( N j = 0; j < num_partitions; ++j )
-            {
-                std::set< N >& set_ij = dependencies[i].dep_set[j];
-                It it = set_ij.begin(), end = set_ij.end();
-                for( ; it != end; ++it, ++count )
-                    big_to_small_map.insert( std::make_pair( *it, count ) );
-            }
-            N num_columns = count;
-
-            NVec& cols = matrices[i].col_idx;
-            for( N j = 0; j < cols.size(); ++j )
-                cols[j] = big_to_small_map[cols[j]];
-
-            // send basic matrix information
-            // then send CSR
-            N buffer[4];
-            N num_vals = matrices[i].col_idx.size();
-            buffer[0] = num_vals;
-            buffer[1] = matrices[i].row_ptrs.size() -1;
-            buffer[2] = num_columns;
-            buffer[3] = num_partitions;
-            std::cout << "DEBUG: Rank = " << i << std::endl;
-            std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << matrices[i].row_ptrs.size() - 1<<
-                " num_columns = " << num_columns << " num_partitions = " << num_partitions << "\n";
-            if( i != 0 ) { // only send information if it is not available with me
-            MPI::COMM_WORLD.Send( buffer, 4, MPI::UNSIGNED, i, 0 );
-            MPI::COMM_WORLD.Send( &matrices[i].values[0],
-                    num_vals, MPI::DOUBLE, i, 1);
-            MPI::COMM_WORLD.Send( &matrices[i].col_idx[0],
-                    num_vals, MPI::UNSIGNED, i, 2);
-            MPI::COMM_WORLD.Send( &matrices[i].row_ptrs[0],
-                    buffer[1] + 1, MPI::UNSIGNED, i, 3);
-            }
-            else
-            {
-                p.matrix = CSRMatrix::create( num_columns,
-                        matrices[i].values,
-                        matrices[i].col_idx,
-                        matrices[i].row_ptrs);
-            }
-        }
-
-    }
-
-    // need number of vals, number of rows, number of columns
-    // number of partitions?
-    DO_IF_NOT_RANK0 {
-
-    N buffer[4];
-    MPI::COMM_WORLD.Recv( buffer, 4, MPI::UNSIGNED, 0, 0 ); // tagging as 0th comm
-    // I need the matrix
-    N num_vals = buffer[0], num_rows = buffer[1],
-      num_columns = buffer[2], num_partitions = buffer[3];
-    std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << num_rows <<
-        " num_columns = " << num_columns << " num_partitions = " << num_partitions <<
-        " rank = " << proc_info.rank << "\n";
-
-    RVec vals( num_vals );
-    NVec col_idxs( num_vals ), rows( num_rows + 1 );
-    MPI::COMM_WORLD.Recv( &vals[0], num_vals, MPI::DOUBLE, 0, 1 );
-    MPI::COMM_WORLD.Recv( &col_idxs[0], num_vals, MPI::UNSIGNED, 0, 2);
-    MPI::COMM_WORLD.Recv( &rows[0], num_rows + 1, MPI::UNSIGNED, 0, 3);
-    p.matrix = CSRMatrix::create( num_columns, vals, col_idxs, rows );
-
-    }
-
-    std::cout << "DEBUG: Preprocess finished @ " << proc_info.rank << "\n";
-    return p;
-
-
+    for(N i = 0, max_val = 0; i < snd_vals.size(); ++i)
+        max_val = ( max_val < snd_vals[i] ) ? snd_vals[i] : max_val;
+    ASSERT_EQUALS( max_vals, num_rows );
 }
 
 void PageRankMPI::calculatePageRank(
@@ -179,5 +26,29 @@ void PageRankMPI::calculatePageRank(
     RVec& input,
     const ConvergenceCriterion& crit )
 {
+    // do matrix multiplication
+    // send vector values to respective guys
+    // reduce norm
+    // bcast new norm
+    // check for convergence
+    // if converged send output to 0
+    sanityCheck( partition.snd_vals, matrix->numRows());
+    bool converged = false;
+    N iterations = 0;
+    RVec output( matrix->numRows(), 0 ), send_buffer( parition.snd_vals.size() );
+    NVec send_count( calcCountFromDisp( partition.snd_disp ) ),
+         rcv_count( calcCountFromDisp( partition.rx_disp ) );
+    while( !converged )
+    {
+        matrix->multiply( input, output );
+        copyToSendBuffer( output, partition.snd_vals, send_buffer );
+        MPI::COMM_WORLD.Alltoallv(
+            &send_buffer[0], &send_count[0],
+            &partition.snd_disp[0], MPI::DOUBLE,
+            &input[0], &rx_count[0],
+            &partition.rx_disp[0], MPI::DOUBLE);
+
+        ++iterations;
+    }
 
 }

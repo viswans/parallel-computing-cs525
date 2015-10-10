@@ -12,12 +12,14 @@ namespace PageRank {
 
     struct ProcessPartitionInfo
     {
-        // snd_info[i] - all elements to send to proc i
-        // rx_info[i] - all elements to receive from proc i
+        // snd_vals - all elements to send serially
         typedef std::shared_ptr< const ProcessPartitionInfo > CPtr;
+        ProcessPartitionInfo(
+            N orig_columns,
+            N num_procs,
+            N snd_vals_size);
         N num_columns_original_matrix;
-        std::vector< NVec > snd_info;
-        std::vector< NVec > rx_info;
+        NVec snd_vals;
         NVec snd_disp;
         NVec rx_disp;
     };

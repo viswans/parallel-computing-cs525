@@ -4,6 +4,12 @@
 
 using namespace PageRank;
 
+ProcessPartitionInfo::ProcessPartitionInfo(
+    N orig_columns,
+    N num_procs,
+    N snd_vals_size ): num_columns_original_matrix( orig_columns ),
+    snd_vals( snd_vals_size ), snd_disp( num_procs ), rx_disp( num_procs ){};
+
 Partition::CPtr Partition::createFromPartnVector(
     const NVecPtr& partition_map, N num_partitions )
 {
