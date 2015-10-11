@@ -24,7 +24,6 @@ void PageRankSerial::calculatePageRank (
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";
         input = output;
-        return;
     };
     if( i == criterion.maxIterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<

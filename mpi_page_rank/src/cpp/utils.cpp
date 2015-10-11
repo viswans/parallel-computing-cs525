@@ -12,6 +12,9 @@ struct PageRankSorter
     PageRankSorter( const RVec* basis_ ): basis(basis_) {}
     bool operator()( NPair i, NPair j)
     {
+        if( i.first > basis->size() || j.first > basis->size())
+            std::cout << "DEBUG: Strange things " << i.first
+                << ',' << j.first << " " << basis->size() << "\n";
         return (basis->at(i.first) >= basis->at(j.first)) ;
     }
 };

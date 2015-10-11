@@ -8,7 +8,7 @@ using namespace PageRank;
 namespace {
 
     // utiltiy function to use just for this case and avoid copy
-    R normSqDiffTemp ( const RVec& input, const RVec& output, int offset )
+    R normSqDiffTemp ( const RVec& input, N offset, const RVec& output )
     {
         N i = 0, sz = output.size(); R norm_diff = 0;
         for( ; i < sz; ++i )
@@ -16,6 +16,8 @@ namespace {
             R temp = (input[offset+i] - output[i]);
             norm_diff += temp * temp;
         }
+        // std::cout << "DEBUG: norm_diff @" << proc_info.rank <<
+        //     " = " << norm_diff << "\n";
         return norm_diff;
     }
 
@@ -33,10 +35,9 @@ namespace {
     }
 
     R calcTolDiff(
-        const RVec& input, const RVec& output,
-        N offset, N root = 0 )
+        const RVec& input, N offset, const RVec& output, N root = 0 )
     {
-        R norm_diff_local = normSqDiffTemp( input, output, offset );
+        R norm_diff_local = normSqDiffTemp( input, offset, output );
         R norm_diff;
         MPI::COMM_WORLD.Reduce( &norm_diff_local, &norm_diff,
             1, MPI::DOUBLE, MPI::SUM, root);
@@ -81,7 +82,7 @@ void PageRankMPI::calculatePageRank(
     N iterations = 0;
     // this is the offset of the current rank vector
     // the input vector
-    N offset = partition.snd_disp[proc_info.rank];
+    N offset = partition.rx_disp[proc_info.rank];
     N num_partitions = partition.snd_disp.size();
     R toldiff= 1e5;
     RVec send_buffer( partition.snd_vals.size() );
@@ -98,10 +99,10 @@ void PageRankMPI::calculatePageRank(
         matrix.multiply( input, output );
         normalize( output );
         // calculate toldiff
-        toldiff = calcTolDiff( input, output, offset );
+        toldiff = calcTolDiff( input, offset, output );
         DO_ONLY_AT_RANK0
-        std::cout << "DEBUG: Iterations = " << iterations
-            <<  " Tolerance = " << toldiff << std::endl;
+        std::cout << "DEBUG: iterations = " << iterations
+            <<  " toldiff = " << toldiff << std::endl;
         if( toldiff <= criterion.tolerance ) break;
         copyToSendBuffer( output, partition.snd_vals, send_buffer );
         MPI::COMM_WORLD.Alltoallv(
@@ -110,5 +111,13 @@ void PageRankMPI::calculatePageRank(
             (int*)&input[0], (const int*)&rx_count[0],
             (const int*)&partition.rx_disp[0], MPI::DOUBLE);
     }
+
+    if( iterations == criterion.maxIterations )
+        std::cout << "DEBUG: Terminated because of maxiterations with " <<
+            " tolerancediff = " << toldiff << " and maxIterations = "
+            << criterion.maxIterations << "\n";
+    else
+        std::cout << "DEBUG: Finished and converged on pagerank vector"
+            " in " << iterations << " iterations with ||Ax - x||_2 = " << toldiff << "\n";
 
 }

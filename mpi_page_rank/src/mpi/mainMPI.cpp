@@ -47,10 +47,10 @@ void assembleEigenVec(
              N access_id = row_id + gather_disp[part_id];
              eigen_vec[i] = rx_vec[ access_id ];
         }
-        std::ofstream vec_dump("vec.out");
-        Utils::showVector( vec_dump, eigen_vec, "\n" );
+        // std::ofstream vec_dump("vec.out");
+        // Utils::showVector( vec_dump, eigen_vec, "\n" );
     }
-    std::cout << "DEBUG: Gathering data\n";
+    // std::cout << "DEBUG: Gathering data\n";
 
 }
 
@@ -109,7 +109,7 @@ int mainMPI( int argc, char* argv[] )
     }
 
     PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map, gather_disp );
-    checkDataStructures( pre );
+    // checkDataStructures( pre );
     std::cout << "DEBUG: Preprocess done\n";
     CSRMatrix::CPtr localmatrix = pre.matrix;
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
