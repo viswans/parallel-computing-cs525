@@ -1,19 +1,11 @@
 #include <pagerankMPI.h>
 #include <mpi.h>
 #include <cmath>
+#include <utils.h>
 
 using namespace PageRank;
 
 namespace {
-
-    void calcCountFromDisp( const NVec& disp, NVec& counts )
-    {
-        assert( counts.size() == disp.size() );
-        N sz = counts.size();
-        counts[0] = 0;
-        for( N i=1 ; i < sz; ++i )
-            counts[i] = disp[i] - disp[i-1];
-    }
 
     // utiltiy function to use just for this case and avoid copy
     R normSqDiffTemp ( const RVec& input, const RVec& output, int offset )
@@ -76,6 +68,7 @@ void PageRankMPI::calculatePageRank(
     const CSRMatrix& matrix,
     const ProcessPartitionInfo& partition,
     RVec& input,
+    RVec& output,
     const ConvergenceCriterion& criterion )
 {
     // do matrix multiplication
@@ -91,10 +84,14 @@ void PageRankMPI::calculatePageRank(
     N offset = partition.snd_disp[proc_info.rank];
     N num_partitions = partition.snd_disp.size();
     R toldiff= 1e5;
-    RVec output( matrix.numRows(), 0 ), send_buffer( partition.snd_vals.size() );
+    RVec send_buffer( partition.snd_vals.size() );
     NVec send_count( num_partitions ), rx_count( num_partitions );
-    calcCountFromDisp( partition.snd_disp , send_count );
-    calcCountFromDisp( partition.rx_disp, rx_count ) ;
+    Utils::calcCountFromDisp( partition.snd_disp, partition.snd_vals.size() , send_count );
+    // std::cout << "DEBUG: Send Counts " << proc_info.rank;
+    // Utils::showVector( std::cout, send_count );
+    Utils::calcCountFromDisp( partition.rx_disp, matrix.numColumns(), rx_count ) ;
+    // std::cout << "DEBUG: Rx Counts " << proc_info.rank;
+    // Utils::showVector( std::cout, rx_count );
 
     while( ++iterations < criterion.maxIterations )
     {
@@ -102,10 +99,10 @@ void PageRankMPI::calculatePageRank(
         normalize( output );
         // calculate toldiff
         toldiff = calcTolDiff( input, output, offset );
+        DO_ONLY_AT_RANK0
         std::cout << "DEBUG: Iterations = " << iterations
-            <<  "Tolerance = " << toldiff << std::endl;
+            <<  " Tolerance = " << toldiff << std::endl;
         if( toldiff <= criterion.tolerance ) break;
-        ++iterations;
         copyToSendBuffer( output, partition.snd_vals, send_buffer );
         MPI::COMM_WORLD.Alltoallv(
             (const int*)&send_buffer[0], (const int*)&send_count[0],

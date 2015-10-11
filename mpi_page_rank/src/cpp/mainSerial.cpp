@@ -15,7 +15,7 @@ void help( HelpTypes e )
         std::cout << "Error: Either graph file or partition file could not be opened\n";
 }
 
-int mainSerial( int argc, const char* argv[] )
+int mainSerial( int argc, char* argv[] )
 {
     if( argc != 3 ) { help(eFormat); return 0; }
     std::fstream graphFile(argv[1]), partitionFile(argv[2]);
@@ -33,6 +33,8 @@ int mainSerial( int argc, const char* argv[] )
     gettimeofday( &start_time, NULL);
     PageRankSerial::calculatePageRank( *matrix, eigen_vect );
     gettimeofday( &end_time, NULL);
+    std::ofstream vec_dump( "vec1.out");
+    Utils::showVector( vec_dump, eigen_vect, "\n" );
     R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     resultFile << "time: " <<  time_taken << "s\n";

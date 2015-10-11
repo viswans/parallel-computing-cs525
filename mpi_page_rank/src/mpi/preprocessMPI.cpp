@@ -29,7 +29,8 @@ namespace {
 PreProcOutput PageRankMPI::preprocess(
     const CSRMatrix::CPtr matrix,
     const Partition::CPtr partition,
-    std::vector< NodePartitionInfo >& partition_map )
+    std::vector< NodePartitionInfo >& partition_map,
+    NVec& gather_disp)
 {
     // matrix and partition information => construct
     // the necessary data
@@ -80,6 +81,8 @@ PreProcOutput PageRankMPI::preprocess(
                 // to process row j
                 dependencies[partition_of_i].dep_set[row_partition[column]].insert( column );
             }
+            // looks like within a process not neccessarily use all the other row info
+            dependencies[partition_of_i].dep_set[partition_of_i].insert( i );
             row_vec.push_back( col_vec.size() );
         }
 
@@ -122,11 +125,16 @@ PreProcOutput PageRankMPI::preprocess(
                     big_to_small_map.insert( std::make_pair( *it, count ) );
             }
             num_columns[i] = count;
-
             NVec& cols = matrices[i].col_idx;
             for( N j = 0; j < cols.size(); ++j )
                 cols[j] = big_to_small_map[cols[j]];
         }
+
+        // add row size to gather displacement vector
+        gather_disp[0] = 0;
+        for( N i = 0; i < num_partitions; ++i )
+            gather_disp[i+1] = gather_disp[i] + ( matrices[i].row_ptrs.size() - 1);
+
 
         // Send information
         // Find send_vector i.e once rows are calculated
@@ -138,8 +146,8 @@ PreProcOutput PageRankMPI::preprocess(
         for( N i = 0; i < num_partitions; ++i )
         {
             NVec send_info, send_disp, rx_disp;
-            send_disp.push_back( 0 ); rx_disp.push_back( 0 );
-            for( N j = 0, count = 0; j < num_partitions; ++j )
+            send_disp.push_back( 0 );
+            for( N j = 0 ; j < num_partitions; ++j )
             {
                 // gives dependency of jth set on ith process
                 std::set< N >& set_ij = dependencies[j].dep_set[i];
@@ -147,6 +155,12 @@ PreProcOutput PageRankMPI::preprocess(
                 for( ; it != end; ++it )
                     send_info.push_back( partition_map[*it].row_id );
                 send_disp.push_back( send_info.size() );
+            }
+
+            rx_disp.push_back( 0 );
+            for( N j = 0, count = 0 ; j < num_partitions; ++j )
+            {
+                std::set< N >& set_ij = dependencies[i].dep_set[j];
                 count += set_ij.size();
                 rx_disp.push_back( count );
             }

@@ -20,6 +20,15 @@ namespace PageRank {
     class Utils
     {
      public:
+        template< typename T>
+        static void showVector(
+            std::ostream& oss, const std::vector<T>& vec, std::string delim = ", ")
+        {
+            oss << "[" << vec.size() << "]: "; N i = 0;
+            for ( ; i < vec.size()-1 ; ++i )
+                oss << vec[i] << delim;
+            oss << vec[i] << "\n";
+        }
         static void writePageRank(
                 std::ostream& oss,
                 const RVec& page_rank_weight );
@@ -28,9 +37,10 @@ namespace PageRank {
         // normOfDiff only for vectors of same size
         static R normOfDiff( const RVec& v1, const RVec& v2 );
         static void normalize( RVec& input );
-
+        static void calcCountFromDisp( const NVec& disp, N total, NVec& counts );
     };
 }
+
 
 
 #endif   // end of utils

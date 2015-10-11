@@ -20,12 +20,14 @@ namespace PageRank {
         static PreProcOutput preprocess(
             const CSRMatrix::CPtr matrix,
             const Partition::CPtr partition,
-            std::vector< NodePartitionInfo >& partition_map );
+            std::vector< NodePartitionInfo >& partition_map,
+            NVec& gather_disp);
 
         static void calculatePageRank (
             const CSRMatrix& matrix,
             const ProcessPartitionInfo& partition,
             RVec& input,
+            RVec& output,
             const ConvergenceCriterion& crit = ConvergenceCriterion());
 
     };

@@ -21,9 +21,10 @@ void PageRankSerial::calculatePageRank (
         matrix.multiply( input, output );
         Utils::normalize( output );
         toldiff = Utils::normOfDiff( input, output );
-        // std::cout << "DEBUG: output = " << output <<
-        //    "toldiff = " << toldiff << "\n";
+        std::cout << "DEBUG: iterations = " << i <<
+            " toldiff = " << toldiff << "\n";
         input = output;
+        return;
     };
     if( i == criterion.maxIterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<

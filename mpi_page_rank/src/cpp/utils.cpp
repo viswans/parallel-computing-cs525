@@ -55,12 +55,23 @@ void Utils::writePageRank( std::ostream& oss, const RVec& page_rank_weight )
         page_rank[i].first = i;
         page_rank[i].second = 0;
     }
-    sort( page_rank.begin(), page_rank.end(),
+    std::sort( page_rank.begin(), page_rank.end(),
             PageRankSorter( &page_rank_weight) );
+    std::cout << "DEBUG: Sort based on rank done\n";
     for( N i = 0; i < num_nodes; ++i ) page_rank[i].second = i;
-    sort( page_rank.begin(), page_rank.end() );
+    std::sort( page_rank.begin(), page_rank.end() );
 
     for( N i = 0; i < num_nodes; ++i )
         oss << page_rank[i].first << " " << page_rank[i].second << "\n";
 
 }
+
+void Utils::calcCountFromDisp( const NVec& disp, N total, NVec& counts )
+{
+    assert( counts.size() == disp.size() );
+    N sz = counts.size();
+    for( N i=0 ; i < sz - 1; ++i )
+        counts[i] = disp[i+1] - disp[i];
+    counts[ sz-1 ] = total - disp[sz-1];
+}
+
