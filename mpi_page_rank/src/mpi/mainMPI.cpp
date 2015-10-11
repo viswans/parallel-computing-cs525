@@ -30,7 +30,7 @@ void assembleEigenVec(
     DO_ONLY_AT_RANK0 {
         gather_count.resize( gather_disp.size() );
         Utils::calcCountFromDisp( gather_disp, num_orig_columns, gather_count );
-        Utils::showVector( std::cout, gather_disp );
+        // Utils::showVector( std::cout, gather_disp );
         eigen_vec.resize( num_orig_columns );
         rx_vec.resize( num_orig_columns );
     }
@@ -124,7 +124,7 @@ int mainMPI( int argc, char* argv[] )
 
     RVec eigen_vec;
     assembleEigenVec( output_vec, num_orig_columns, partition_map, gather_disp, eigen_vec );
-    // writeToResult( start_time, end_time, eigen_vec);
+    writeToResult( start_time, end_time, eigen_vec);
     return finalize();
 }
 

@@ -1,6 +1,6 @@
 CXX       := g++
 MPICXX    := mpicxx
-CXXFLAGS  := -I include -std=c++11 -Wall  -O3 -lm #-DPAGERANK_MPI
+CXXFLAGS  := -I include -std=c++11 -Wall  -O3 -lm -DPAGERANK_MPI
 LD        := mpicxx
 LDFLAGS   := -O3
 EXE       := pagerank
