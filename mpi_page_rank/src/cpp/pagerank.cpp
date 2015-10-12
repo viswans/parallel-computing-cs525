@@ -13,18 +13,20 @@ void PageRankSerial::calculatePageRank (
     const ConvergenceCriterion& criterion)
 {
     assert( matrix.numColumns() == input.size() );
-    RVec output(input.size());
     double toldiff = 1e5;
+    std::shared_ptr< RVec >
+        input_buf( new RVec( input ) ), output_buf( new RVec( input.size() ) ), temp;
     unsigned int i = 0;
     while( ++i < criterion.maxIterations &&
             toldiff > criterion.tolerance ) {
-        matrix.multiply( input, output );
-        Utils::normalize( output );
-        toldiff = Utils::normOfDiff( input, output );
+        matrix.multiply( *(input_buf), *(output_buf) ) ;
+        Utils::normalize( *(output_buf) );
+        toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";
-        input = output;
+        std::swap( input_buf, output_buf );
     };
+    input = *(input_buf);
     if( i == criterion.maxIterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
             " tolerancediff = " << toldiff << " and maxIterations = "
