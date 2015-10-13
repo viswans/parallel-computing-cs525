@@ -76,6 +76,7 @@ void writeToResult(
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     std::fstream resultFile( "pagerank.result", std::ios::out );
     resultFile << "time: " <<  time_taken << "s\n";
+    std::cout << "DEBUG: time: " << time_taken << "s\n";
     Utils::writePageRank( resultFile, eigen_vect );
 }
 

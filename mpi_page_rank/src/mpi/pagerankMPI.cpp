@@ -99,6 +99,7 @@ void PageRankMPI::calculatePageRank(
         matrix.multiply( input, output );
         normalize( output );
         // calculate toldiff
+        if( (iterations & 0x7 ) == 0 )
         toldiff = calcTolDiff( input, offset, output );
         DO_ONLY_AT_RANK0
         std::cout << "DEBUG: iterations = " << iterations
