@@ -35,6 +35,15 @@ namespace {
             input[i] = input[i]/norm;
     }
 
+    void normalizeProb( RVec& input, N root = 0 )
+    {
+        R sum = 0, total_sum = 0;
+        for( N i=0; i < input.size() ; ++i ) sum += input[i];
+        MPI::COMM_WORLD.Reduce( &sum, &total_sum,
+            1, MPI::DOUBLE, MPI::SUM, root);
+        // std::cout << "DEBUG: Total sum = " << total_sum << "\n";
+    }
+
     R calcTolDiff(
         const RVec& input, N offset, const RVec& output, N root = 0 )
     {
@@ -101,7 +110,7 @@ void PageRankMPI::calculatePageRank(
     // std::cout << "DEBUG: Rx Counts " << proc_info.rank;
     // Utils::showVector( std::cout, rx_count );
 
-    while( ++iterations < criterion.maxIterations )
+    while( ++iterations < criterion.max_iterations )
     {
         gettimeofday( &start_time, NULL);
         matrix.multiply( input, output );
@@ -109,15 +118,16 @@ void PageRankMPI::calculatePageRank(
         time_taken[0] += (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
 
-        if( (iterations & 0x1) == 0)
+        if( ( iterations & 0xf ) == 0 )
         {
         gettimeofday( &start_time, NULL);
-        normalize( output );
+        // normalizeProb( output );
         // calculate toldiff
         toldiff = calcTolDiff( input, offset, output );
         gettimeofday( &end_time, NULL);
         time_taken[1] += (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+
         }
 
         DO_ONLY_AT_RANK0
@@ -142,10 +152,10 @@ void PageRankMPI::calculatePageRank(
     }
 
     DO_ONLY_AT_RANK0 {
-    if( iterations == criterion.maxIterations )
+    if( iterations == criterion.max_iterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
-            " tolerancediff = " << toldiff << " and maxIterations = "
-            << criterion.maxIterations << "\n";
+            " tolerancediff = " << toldiff << " and max_iterations = "
+            << criterion.max_iterations << "\n";
     else
         std::cout << "DEBUG: Finished and converged on pagerank vector"
             " in " << iterations << " iterations with ||Ax - x||_2 = " << toldiff << "\n";

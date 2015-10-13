@@ -10,11 +10,11 @@ namespace PageRank {
     struct ConvergenceCriterion
     {
         double tolerance;
-        unsigned int maxIterations;
+        unsigned int max_iterations;
         ConvergenceCriterion(
             int maxiters = defaultMaxIters,
             double tol = defaultTolerance )
-            : tolerance( tol ), maxIterations( maxiters ) {}
+            : tolerance( tol ), max_iterations( maxiters ) {}
     };
 
     class Utils

@@ -84,7 +84,7 @@ void CSRMatrix::multiply(
 }
 
 std::shared_ptr< const CSRMatrix >
-CSRMatrix::readFromStream( std::istream& iss  )
+CSRMatrix::readFromStream( std::istream& iss, bool col_stochastic  )
 {
     using namespace std;
     string line;
@@ -126,6 +126,22 @@ CSRMatrix::readFromStream( std::istream& iss  )
 
     ASSERT_EQUALS_MSG( row_ptr->size() - 1, columns + 1,
             "# Rows != # Columns. Page rank on a rect matrix?\n" );
+
+    if( col_stochastic )
+    {
+    RVec column_weights( columns , 0);
+    for( i = 0; i < entries_ptr->size(); ++i )
+    {
+        column_weights[entries_ptr->at(i).column_idx] +=
+            entries_ptr->at(i).value;
+    }
+
+    for( i = 0; i < entries_ptr->size(); ++i )
+    {
+        entries_ptr->at(i).value /= column_weights[entries_ptr->at(i).column_idx];
+    }
+
+    }
 
     return shared_ptr<const CSRMatrix>(
             new CSRMatrix( row_ptr->size() - 1, columns + 1, entries_ptr, row_ptr) );

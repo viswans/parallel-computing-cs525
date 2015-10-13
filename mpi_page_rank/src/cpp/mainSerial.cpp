@@ -20,18 +20,19 @@ int mainSerial( int argc, char* argv[] )
     if( argc != 3 ) { help(eFormat); return 0; }
     std::fstream graphFile(argv[1]), partitionFile(argv[2]);
     if( !graphFile || !partitionFile ) { help(eFileNotExist); return 0; }
-    std::fstream resultFile( "pagerank.result", std::ios::out );
+    std::fstream resultFile( "pagerank.result.serial", std::ios::out );
 
     // enter page rank program
     using namespace PageRank;
-    CSRMatrix::CPtr matrix( CSRMatrix::readFromStream( graphFile ) );
+    CSRMatrix::CPtr matrix( CSRMatrix::readFromStream( graphFile, true ) );
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
     N num_nodes = matrix->numColumns();
-    RVec eigen_vect( num_nodes, 1.0/sqrt( num_nodes ) );
+    RVec eigen_vect( num_nodes, 1.0/( num_nodes ) );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-    PageRankSerial::calculatePageRank( *matrix, eigen_vect );
+    ConvergenceCriterion c;
+    PageRankSerial::calculatePageRank( *matrix, eigen_vect, c );
     gettimeofday( &end_time, NULL);
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );

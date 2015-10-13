@@ -18,7 +18,7 @@ namespace PageRank {
     {
      public:
         typedef std::shared_ptr< const CSRMatrix > CPtr;
-        static CPtr readFromStream( std::istream& iss );
+        static CPtr readFromStream( std::istream& iss, bool col_stoch );
         static CPtr create(
             N num_cols,
             const RVec& values,
