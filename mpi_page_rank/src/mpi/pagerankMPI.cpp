@@ -2,6 +2,7 @@
 #include <mpi.h>
 #include <cmath>
 #include <utils.h>
+#include <sys/time.h>
 
 using namespace PageRank;
 
@@ -80,6 +81,12 @@ void PageRankMPI::calculatePageRank(
     // if converged send output to 0
     sanityCheck( partition.snd_vals, matrix.numRows());
     N iterations = 0;
+    timeval start_time, end_time;
+    // std::ofstream vec_dump( "vec1.out");
+    // Utils::showVector( vec_dump, eigen_vect, "\n" );
+    // std::cout << "DEBUG: " << start_time.tv_sec << ' ' << start_time.tv_usec << "\n";
+    // std::cout << "DEBUG: " << end_time.tv_sec << ' ' << end_time.tv_usec << "\n";
+    R time_taken = 0;
     // this is the offset of the current rank vector
     // the input vector
     N offset = partition.rx_disp[proc_info.rank];
@@ -99,18 +106,21 @@ void PageRankMPI::calculatePageRank(
         matrix.multiply( input, output );
         normalize( output );
         // calculate toldiff
-        if( (iterations & 0x7 ) == 0 )
         toldiff = calcTolDiff( input, offset, output );
         DO_ONLY_AT_RANK0
         std::cout << "DEBUG: iterations = " << iterations
             <<  " toldiff = " << toldiff << std::endl;
         if( toldiff <= criterion.tolerance ) break;
         copyToSendBuffer( output, partition.snd_vals, send_buffer );
+        gettimeofday( &start_time, NULL);
         MPI::COMM_WORLD.Alltoallv(
             (const int*)&send_buffer[0], (const int*)&send_count[0],
             (const int*)&partition.snd_disp[0], MPI::DOUBLE,
             (int*)&input[0], (const int*)&rx_count[0],
             (const int*)&partition.rx_disp[0], MPI::DOUBLE);
+        gettimeofday( &end_time, NULL);
+        time_taken += (  end_time.tv_sec - start_time.tv_sec ) +
+        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     }
 
     if( iterations == criterion.maxIterations )
@@ -120,5 +130,6 @@ void PageRankMPI::calculatePageRank(
     else
         std::cout << "DEBUG: Finished and converged on pagerank vector"
             " in " << iterations << " iterations with ||Ax - x||_2 = " << toldiff << "\n";
+    std::cout << "DEBUG: AlltoAll comm costs = " << time_taken << "s\n";
 
 }
