@@ -109,8 +109,6 @@ void PageRankMPI::calculatePageRank(
         time_taken[0] += (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
 
-        if( (iterations & 0x1) == 0)
-        {
         gettimeofday( &start_time, NULL);
         normalize( output );
         // calculate toldiff
@@ -118,7 +116,6 @@ void PageRankMPI::calculatePageRank(
         gettimeofday( &end_time, NULL);
         time_taken[1] += (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
-        }
 
         DO_ONLY_AT_RANK0
         std::cout << "DEBUG: iterations = " << iterations
