@@ -101,7 +101,7 @@ void PageRankMPI::calculatePageRank(
     // std::cout << "DEBUG: Rx Counts " << proc_info.rank;
     // Utils::showVector( std::cout, rx_count );
 
-    while( ++iterations < criterion.maxIterations )
+    while( ++iterations < criterion.max_iterations )
     {
         gettimeofday( &start_time, NULL);
         matrix.multiply( input, output );
@@ -139,10 +139,10 @@ void PageRankMPI::calculatePageRank(
     }
 
     DO_ONLY_AT_RANK0 {
-    if( iterations == criterion.maxIterations )
+    if( iterations == criterion.max_iterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
-            " tolerancediff = " << toldiff << " and maxIterations = "
-            << criterion.maxIterations << "\n";
+            " tolerancediff = " << toldiff << " and max_iterations = "
+            << criterion.max_iterations << "\n";
     else
         std::cout << "DEBUG: Finished and converged on pagerank vector"
             " in " << iterations << " iterations with ||Ax - x||_2 = " << toldiff << "\n";

@@ -34,7 +34,8 @@ int mainSerial( int argc, char* argv[] )
     RVec eigen_vect( num_nodes, 1.0/sqrt( num_nodes ) );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-    PageRankSerial::calculatePageRank( *matrix, eigen_vect );
+    ConvergenceCriterion c;
+    PageRankSerial::calculatePageRank( *matrix, eigen_vect, c );
     gettimeofday( &end_time, NULL);
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );

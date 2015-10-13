@@ -17,7 +17,7 @@ void PageRankSerial::calculatePageRank (
     std::shared_ptr< RVec >
         input_buf( new RVec( input ) ), output_buf( new RVec( input.size() ) ), temp;
     unsigned int i = 0;
-    while( ++i < criterion.maxIterations &&
+    while( ++i < criterion.max_iterations &&
             toldiff > criterion.tolerance ) {
         matrix.multiply( *(input_buf), *(output_buf) ) ;
         Utils::normalize( *(output_buf) );
@@ -27,10 +27,10 @@ void PageRankSerial::calculatePageRank (
         std::swap( input_buf, output_buf );
     };
     input = *(input_buf);
-    if( i == criterion.maxIterations )
+    if( i == criterion.max_iterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
-            " tolerancediff = " << toldiff << " and maxIterations = "
-            << criterion.maxIterations << "\n";
+            " tolerancediff = " << toldiff << " and max_iterations = "
+            << criterion.max_iterations << "\n";
     else
         std::cout << "DEBUG: Finished and converged on pagerank vector"
             " in " << i << " iterations with ||Ax - x||_2 = " << toldiff << "\n";
