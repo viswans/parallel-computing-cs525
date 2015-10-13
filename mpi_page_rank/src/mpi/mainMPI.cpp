@@ -12,7 +12,7 @@
 ProcessInfo proc_info;
 
 int finalize() {
-    std::cout << "DEBUG: Finalizing\n";
+    // std::cout << "DEBUG: Finalizing\n";
     MPI::Finalize();
     return 0;
 }

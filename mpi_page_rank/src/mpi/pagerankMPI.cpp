@@ -86,7 +86,7 @@ void PageRankMPI::calculatePageRank(
     // Utils::showVector( vec_dump, eigen_vect, "\n" );
     // std::cout << "DEBUG: " << start_time.tv_sec << ' ' << start_time.tv_usec << "\n";
     // std::cout << "DEBUG: " << end_time.tv_sec << ' ' << end_time.tv_usec << "\n";
-    R time_taken = 0;
+    R time_taken[] = {0, 0, 0, 0};
     // this is the offset of the current rank vector
     // the input vector
     N offset = partition.rx_disp[proc_info.rank];
@@ -103,15 +103,33 @@ void PageRankMPI::calculatePageRank(
 
     while( ++iterations < criterion.maxIterations )
     {
+        gettimeofday( &start_time, NULL);
         matrix.multiply( input, output );
+        gettimeofday( &end_time, NULL);
+        time_taken[0] += (  end_time.tv_sec - start_time.tv_sec ) +
+        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+
+        if( (iterations & 0x1) == 0)
+        {
+        gettimeofday( &start_time, NULL);
         normalize( output );
         // calculate toldiff
         toldiff = calcTolDiff( input, offset, output );
+        gettimeofday( &end_time, NULL);
+        time_taken[1] += (  end_time.tv_sec - start_time.tv_sec ) +
+        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+        }
+
         DO_ONLY_AT_RANK0
         std::cout << "DEBUG: iterations = " << iterations
             <<  " toldiff = " << toldiff << std::endl;
         if( toldiff <= criterion.tolerance ) break;
+        gettimeofday( &start_time, NULL);
         copyToSendBuffer( output, partition.snd_vals, send_buffer );
+        gettimeofday( &end_time, NULL);
+        time_taken[2] += (  end_time.tv_sec - start_time.tv_sec ) +
+        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+
         gettimeofday( &start_time, NULL);
         MPI::COMM_WORLD.Alltoallv(
             (const int*)&send_buffer[0], (const int*)&send_count[0],
@@ -119,10 +137,11 @@ void PageRankMPI::calculatePageRank(
             (int*)&input[0], (const int*)&rx_count[0],
             (const int*)&partition.rx_disp[0], MPI::DOUBLE);
         gettimeofday( &end_time, NULL);
-        time_taken += (  end_time.tv_sec - start_time.tv_sec ) +
+        time_taken[3] += (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     }
 
+    DO_ONLY_AT_RANK0 {
     if( iterations == criterion.maxIterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
             " tolerancediff = " << toldiff << " and maxIterations = "
@@ -130,6 +149,10 @@ void PageRankMPI::calculatePageRank(
     else
         std::cout << "DEBUG: Finished and converged on pagerank vector"
             " in " << iterations << " iterations with ||Ax - x||_2 = " << toldiff << "\n";
-    std::cout << "DEBUG: AlltoAll comm costs = " << time_taken << "s\n";
-
+    }
+    std::cout << "DEBUG: Rank = " << proc_info.rank <<
+        " MMult = " << time_taken[0] << "s, ";
+    std::cout << "Norma = " << time_taken[1] << "s, ";
+    std::cout << "BfCpy = " << time_taken[2] << "s, ";
+    std::cout << "Commn = " << time_taken[3] << "s\n";
 }

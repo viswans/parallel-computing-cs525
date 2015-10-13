@@ -86,11 +86,11 @@ PreProcOutput PageRankMPI::preprocess(
             row_vec.push_back( col_vec.size() );
         }
 
-        for( N i = 0; i < num_partitions; ++i  )
-            for( N j = 0; j < num_partitions; ++j )
-                printf("DEBUG: Partition %u depends on %lu "
-                        "elements from Partition %u\n",
-                        i , dependencies[i].dep_set[j].size() , j);
+        // for( N i = 0; i < num_partitions; ++i  )
+        //     for( N j = 0; j < num_partitions; ++j )
+        //         printf("DEBUG: Partition %u depends on %lu "
+        //                 "elements from Partition %u\n",
+        //                 i , dependencies[i].dep_set[j].size() , j);
 
         // fill up map from monolithic vector to
         // partition row based output
@@ -225,9 +225,9 @@ PreProcOutput PageRankMPI::preprocess(
     N num_vals = buffer[0], num_rows = buffer[1],
       num_columns = buffer[2], num_partitions = buffer[3],
       snd_vals_size = buffer[4], orig_columns = buffer[5];
-    std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << num_rows <<
-        " num_columns = " << num_columns << " num_partitions = " << num_partitions <<
-        " rank = " << proc_info.rank << "\n";
+    // std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << num_rows <<
+    //     " num_columns = " << num_columns << " num_partitions = " << num_partitions <<
+    //     " rank = " << proc_info.rank << "\n";
 
     RVec vals( num_vals );
     NVec col_idxs( num_vals ), rows( num_rows + 1 );
