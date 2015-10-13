@@ -10,17 +10,20 @@ enum HelpTypes { eFormat, eFileNotExist };
 void help( HelpTypes e )
 {
     if( e == eFormat )
-        std::cout << "Format: ./pagerank <graph.txt> <graph-partition.txt>\n";
+    {
+        std::cout << "Format: ./pagerank.serial <graph.txt>\n";
+        std::cout << "Format: ./pagerank.parallel <graph.txt> <graph-partition.txt>\n";
+    }
     else if( e == eFileNotExist )
         std::cout << "Error: Either graph file or partition file could not be opened\n";
 }
 
 int mainSerial( int argc, char* argv[] )
 {
-    if( argc != 3 ) { help(eFormat); return 0; }
-    std::fstream graphFile(argv[1]), partitionFile(argv[2]);
-    if( !graphFile || !partitionFile ) { help(eFileNotExist); return 0; }
-    std::fstream resultFile( "pagerank.result", std::ios::out );
+    if( argc != 2 ) { help(eFormat); return 0; }
+    std::fstream graphFile(argv[1]);
+    if( !graphFile ) { help(eFileNotExist); return 0; }
+    std::fstream resultFile( "pagerank.result.serial", std::ios::out );
 
     // enter page rank program
     using namespace PageRank;
