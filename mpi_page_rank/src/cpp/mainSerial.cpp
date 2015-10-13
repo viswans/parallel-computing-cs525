@@ -10,16 +10,19 @@ enum HelpTypes { eFormat, eFileNotExist };
 void help( HelpTypes e )
 {
     if( e == eFormat )
-        std::cout << "Format: ./pagerank <graph.txt> <graph-partition.txt>\n";
+    {
+        std::cout << "Format: ./pagerank.serial <graph.txt>\n";
+        std::cout << "Format: ./pagerank.parallel <graph.txt> <graph-partition.txt>\n";
+    }
     else if( e == eFileNotExist )
         std::cout << "Error: Either graph file or partition file could not be opened\n";
 }
 
 int mainSerial( int argc, char* argv[] )
 {
-    if( argc != 3 ) { help(eFormat); return 0; }
-    std::fstream graphFile(argv[1]), partitionFile(argv[2]);
-    if( !graphFile || !partitionFile ) { help(eFileNotExist); return 0; }
+    if( argc != 2 ) { help(eFormat); return 0; }
+    std::fstream graphFile(argv[1]);
+    if( !graphFile ) { help(eFileNotExist); return 0; }
     std::fstream resultFile( "pagerank.result.serial", std::ios::out );
 
     // enter page rank program
@@ -31,7 +34,7 @@ int mainSerial( int argc, char* argv[] )
     RVec eigen_vect( num_nodes, 1.0/( num_nodes ) );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-    ConvergenceCriterion c;
+    ConvergenceCriterion c; c.max_iterations = 2000;
     PageRankSerial::calculatePageRank( *matrix, eigen_vect, c );
     gettimeofday( &end_time, NULL);
     // std::ofstream vec_dump( "vec1.out");
