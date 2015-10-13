@@ -1,12 +1,13 @@
 CXX       := g++
 MPICXX    := mpicxx
-CXXFLAGS  := -I include -std=c++11 -Wall  -O3 -lm -DPAGERANK_MPI
+CXXFLAGS  := -I include -std=c++11 -Wall  -O3 -lm
 LD        := mpicxx
-LDFLAGS   := -O3
-EXE       := pagerank
+LDFLAGS   := $(CXXFLAGS)
+EXE       := pagerank.serial pagerank.parallel
 
 ## Add your source files here ##
 SRC_DIR   := src
+MAIN_SRC  := $(SRC_DIR)/main.cpp
 MPI_DIR   := $(SRC_DIR)/mpi
 CPP_DIR   := $(SRC_DIR)/cpp
 MPI_SRC   := $(wildcard $(MPI_DIR)/*.cpp)
@@ -19,7 +20,11 @@ CPP_OBJS  := $(patsubst $(CPP_DIR)/%.cpp,$(OBJ_DIR)/%.cpp.o,$(CPP_SRC))
 
 build: $(EXE)
 
-$(EXE): $(MPI_OBJS) $(CPP_OBJS)
+pagerank.parallel: $(MPI_OBJS) $(CPP_OBJS) $(MAIN_SRC)
+	@mkdir -p $(OBJ_DIR)
+	$(LD) $(LDFLAGS) -o $@ $^ -DPAGERANK_MPI
+
+pagerank.serial: $(CPP_OBJS) $(MAIN_SRC)
 	@mkdir -p $(OBJ_DIR)
 	$(LD) $(LDFLAGS) -o $@ $^
 
