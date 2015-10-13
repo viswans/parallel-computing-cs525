@@ -5,7 +5,7 @@
 
 namespace PageRank {
     const int defaultMaxIters = 1000;
-    const double defaultTolerance = 1e-5;
+    const double defaultTolerance = 1e-10;
 
     struct ConvergenceCriterion
     {
