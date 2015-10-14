@@ -22,6 +22,14 @@ namespace {
         return norm_diff;
     }
 
+    void divideVector( RVec& input, R divisor )
+    {
+        assert( divisor > 1e-10 );
+        N size = input.size();
+        for( N i = 0; i < size; ++i )
+            input[i] = input[i]/divisor;
+    }
+
     void normalize( RVec& input, N root = 0 )
     {
         R squared_norm = Utils::sumOfSquares( input );
@@ -30,9 +38,7 @@ namespace {
             1, MPI::DOUBLE, MPI::SUM, root);
         R norm = sqrt( squared_norm_sum );
         MPI::COMM_WORLD.Bcast( &norm, 1, MPI::DOUBLE, root);
-        N size = input.size();
-        for( N i = 0; i < size; ++i )
-            input[i] = input[i]/norm;
+        divideVector( input, norm );
     }
 
     R calcTolDiff(
@@ -79,7 +85,7 @@ void PageRankMPI::calculatePageRank(
     // bcast new norm
     // check for convergence
     // if converged send output to 0
-    sanityCheck( partition.snd_vals, matrix.numRows());
+    // sanityCheck( partition.snd_vals, matrix.numRows());
     N iterations = 0;
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );
@@ -88,7 +94,7 @@ void PageRankMPI::calculatePageRank(
     // the input vector
     N offset = partition.rx_disp[proc_info.rank];
     N num_partitions = partition.snd_disp.size();
-    R toldiff= 1e5;
+    R toldiff= 1e5, pseudo_normalizer = partition.getNodeToColumnRatio();
     RVec send_buffer( partition.snd_vals.size() );
     NVec send_count( num_partitions ), rx_count( num_partitions );
     Utils::calcCountFromDisp( partition.snd_disp, partition.snd_vals.size() , send_count );
@@ -105,9 +111,15 @@ void PageRankMPI::calculatePageRank(
         mult_time.stop();
 
         norm_time.start();
-        normalize( output );
+
+        if( ( iterations & 0xf ) == 0 ) normalize( output );
+        else if ( ( iterations & 0xf  ) == 1 )
+        {
+            normalize( output );
+            toldiff = calcTolDiff( input, offset, output );
+        }
+        else divideVector( output, pseudo_normalizer );
         // calculate toldiff
-        toldiff = calcTolDiff( input, offset, output );
         norm_time.stop();
 
         DO_ONLY_AT_RANK0

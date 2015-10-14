@@ -12,6 +12,10 @@ ProcessPartitionInfo::ProcessPartitionInfo(
     num_nodes_original_matrix( orig_nodes ),
     snd_vals( snd_vals_size ), snd_disp( num_procs ), rx_disp( num_procs ){};
 
+R ProcessPartitionInfo::getNodeToColumnRatio() const {
+    return R(num_nodes_original_matrix)/R(num_columns_original_matrix);
+}
+
 Partition::CPtr Partition::createFromPartnVector(
     const NVecPtr& partition_map, N num_partitions )
 {

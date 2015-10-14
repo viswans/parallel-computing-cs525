@@ -19,6 +19,7 @@ namespace PageRank {
             N orig_nodes,
             N num_procs,
             N snd_vals_size);
+        R getNodeToColumnRatio() const;
         N num_columns_original_matrix;
         N num_nodes_original_matrix;
         NVec snd_vals;
