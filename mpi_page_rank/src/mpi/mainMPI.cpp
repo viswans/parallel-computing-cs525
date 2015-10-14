@@ -116,11 +116,15 @@ int mainMPI( int argc, char* argv[] )
     ProcessPartitionInfo::CPtr part_info = pre.partition_info;
     N num_nodes = localmatrix->numColumns();
     N num_orig_columns = part_info->num_columns_original_matrix;
-    RVec initial_vec( num_nodes, 1.0/sqrt( num_orig_columns ) );
+    RVec initial_vec( num_nodes, 1.0/( num_orig_columns ) );
     RVec output_vec( localmatrix->numRows() );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
+<<<<<<< HEAD
     ConvergenceCriterion c;
+=======
+    ConvergenceCriterion c; c.max_iterations = 3000;
+>>>>>>> 165c13abaed7d653ccd79bec6f40c23e1ee9c4d7
     PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec, c );
     gettimeofday( &end_time, NULL);
 

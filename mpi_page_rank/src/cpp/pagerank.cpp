@@ -23,8 +23,8 @@ void PageRankSerial::calculatePageRank (
         toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";
-        if( toldiff <= criterion.tolerance ) break;
         std::swap( input_buf, output_buf );
+        if( toldiff <= criterion.tolerance ) break;
     };
     input = *(input_buf);
     if( i == criterion.max_iterations )
