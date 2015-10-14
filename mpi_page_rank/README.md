@@ -36,7 +36,7 @@ implementation hack which does the following where only once every 16 iterations
 are 2 normalizations and one check for tolerance difference. The other rounds, there is
 a pseudo normalizer = `num_nodes_original_matrix/num_columns_original_matrix` that gives
 a reasonable assurance that the matrix vector product doesn't shoot up or get divided into
-smaller numbers.
+smaller numbers. [pagerankMPI.cpp](src/mpi/pagerankMPI.cpp#L115)
 ```C++
     if( ( iterations & 0xf ) == 0 ) normalize( output );
     else if ( ( iterations & 0xf  ) == 1 )
