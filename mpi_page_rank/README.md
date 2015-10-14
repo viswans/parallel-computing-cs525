@@ -20,3 +20,10 @@ level of execution - they can be ignored by redirecting the stdout to NULL.
 1. Time is measured using the system function call `gettimeofday()` in different parts
 of the program. The time reported is only the time spent in the matrix multiplication
 parts.
+1. **NOTE**: The output of serial and parallel pagerank computations might slightly differ
+because of the involvement floating point arithmetic and the dissimilar methods of addition
+in calculating norm between the 2 implementations. At the time of writing there were minor
+differences in the pagerank.result to the tune of 100 nodes differing by atmost 2 ranks
+in 200k node test case, and in the 4M node test case about 30,000 difference in ranks with
+atmost 2 rank difference. This can be observed between the output from different outputs
+from different partitioning test runs.
