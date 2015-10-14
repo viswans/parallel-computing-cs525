@@ -40,7 +40,7 @@ PreProcOutput PageRankMPI::preprocess(
     // find dependencies between processes
     PreProcOutput p;
     std::shared_ptr< ProcessPartitionInfo > partition_info(0);
-    const int INITIAL_INFO_SIZE = 6;
+    const int INITIAL_INFO_SIZE = 7;
 
     DO_ONLY_AT_RANK0
     {
@@ -179,6 +179,7 @@ PreProcOutput PageRankMPI::preprocess(
             buffer[3] = num_partitions;
             buffer[4] = send_info.size();
             buffer[5] = matrix->numColumns();
+            buffer[6] = matrix->getMatrixEntries()->size();
             std::cout << "DEBUG: Rank = " << i << std::endl;
             std::cout << "DEBUG: num_vals = " << num_vals <<
                 " num_rows = " << matrices[i].row_ptrs.size() - 1 <<
@@ -201,8 +202,11 @@ PreProcOutput PageRankMPI::preprocess(
             else
             {
                 partition_info.reset(
-                        new ProcessPartitionInfo( matrix->numColumns(),
+                        new ProcessPartitionInfo(
+                            matrix->numColumns(),
+                            matrix->getMatrixEntries()->size(),
                             num_partitions, send_info.size() ) );
+
                 partition_info->snd_vals = send_info;
                 partition_info->snd_disp = send_disp;
                 partition_info->rx_disp = rx_disp;
@@ -224,7 +228,8 @@ PreProcOutput PageRankMPI::preprocess(
     // I need the matrix
     N num_vals = buffer[0], num_rows = buffer[1],
       num_columns = buffer[2], num_partitions = buffer[3],
-      snd_vals_size = buffer[4], orig_columns = buffer[5];
+      snd_vals_size = buffer[4], orig_columns = buffer[5],
+      orig_nodes = buffer[6];
     // std::cout << "DEBUG: num_vals = " << num_vals << " num_rows = " << num_rows <<
     //     " num_columns = " << num_columns << " num_partitions = " << num_partitions <<
     //     " rank = " << proc_info.rank << "\n";
@@ -235,7 +240,10 @@ PreProcOutput PageRankMPI::preprocess(
     MPI::COMM_WORLD.Recv( &col_idxs[0], num_vals, MPI::UNSIGNED, 0, 2);
     MPI::COMM_WORLD.Recv( &rows[0], num_rows + 1, MPI::UNSIGNED, 0, 3);
 
-    partition_info.reset( new ProcessPartitionInfo( orig_columns, num_partitions, snd_vals_size  ) );
+    partition_info.reset( new
+            ProcessPartitionInfo( orig_columns, orig_nodes,
+                num_partitions, snd_vals_size  ) );
+
     MPI::COMM_WORLD.Recv( &partition_info->snd_vals[0],
             snd_vals_size, MPI::UNSIGNED, 0, 4);
     MPI::COMM_WORLD.Recv( &partition_info->snd_disp[0],

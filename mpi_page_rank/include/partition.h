@@ -16,9 +16,11 @@ namespace PageRank {
         typedef std::shared_ptr< const ProcessPartitionInfo > CPtr;
         ProcessPartitionInfo(
             N orig_columns,
+            N orig_nodes,
             N num_procs,
             N snd_vals_size);
         N num_columns_original_matrix;
+        N num_nodes_original_matrix;
         NVec snd_vals;
         NVec snd_disp;
         NVec rx_disp;
