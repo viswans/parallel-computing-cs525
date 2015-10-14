@@ -120,11 +120,7 @@ int mainMPI( int argc, char* argv[] )
     RVec output_vec( localmatrix->numRows() );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-<<<<<<< HEAD
     ConvergenceCriterion c;
-=======
-    ConvergenceCriterion c; c.max_iterations = 3000;
->>>>>>> 165c13abaed7d653ccd79bec6f40c23e1ee9c4d7
     PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec, c );
     gettimeofday( &end_time, NULL);
 
