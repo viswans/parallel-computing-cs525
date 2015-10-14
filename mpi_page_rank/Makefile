@@ -21,17 +21,16 @@ CPP_OBJS  := $(patsubst $(CPP_DIR)/%.cpp,$(OBJ_DIR)/%.cpp.o,$(CPP_SRC))
 build: $(EXE)
 
 pagerank.parallel: $(MPI_OBJS) $(CPP_OBJS) $(MAIN_SRC)
-	@mkdir -p $(OBJ_DIR)
 	$(LD) $(LDFLAGS) -o $@ $^ -DPAGERANK_MPI
 
 pagerank.serial: $(CPP_OBJS) $(MAIN_SRC)
-	@mkdir -p $(OBJ_DIR)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.mpi.o: $(MPI_DIR)/%.cpp
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJ_DIR)/%.cpp.o: $(CPP_DIR)/%.cpp
+	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:

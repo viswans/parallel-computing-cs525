@@ -28,7 +28,9 @@ in calculating norm between the 2 implementations. At the time of writing there 
 differences in the pagerank.result to the tune of 100 nodes differing by atmost 2 ranks
 in 200k node test case, and in the 4M node test case about 30,000 difference in ranks with
 atmost 2 rank difference. This can be observed between the output from different outputs
-from different partitioning test runs.
+from different partitioning test runs. This is without the hack mentioned below. With the
+hack the difference in ranks tally to 50,000 differences out of 4M. But the rank differences
+is very minimal ( I am attaching a sorted difference between ranks generated )
 1. Normalization and tolerane difference computation - On verifying times spent in different
 parts of the code - it was seen that the normalization in every round was consuming a lot of
 time. Hence to avoid the communication costs involved in normalization, there is an
