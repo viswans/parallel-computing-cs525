@@ -114,7 +114,7 @@ void PageRankMPI::calculatePageRank(
         // calculate toldiff
         toldiff = calcTolDiff( input, offset, output );
         gettimeofday( &end_time, NULL);
-        time_taken[1] += (  end_time.tv_sec - start_time.tv_sec ) +
+        time_taken[1] += ( end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
 
         DO_ONLY_AT_RANK0

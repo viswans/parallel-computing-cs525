@@ -17,13 +17,13 @@ void PageRankSerial::calculatePageRank (
     std::shared_ptr< RVec >
         input_buf( new RVec( input ) ), output_buf( new RVec( input.size() ) ), temp;
     unsigned int i = 0;
-    while( ++i < criterion.max_iterations &&
-            toldiff > criterion.tolerance ) {
+    while( ++i < criterion.max_iterations ) {
         matrix.multiply( *(input_buf), *(output_buf) ) ;
         Utils::normalize( *(output_buf) );
         toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";
+        if( toldiff <= criterion.tolerance ) break;
         std::swap( input_buf, output_buf );
     };
     input = *(input_buf);

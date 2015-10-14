@@ -74,7 +74,7 @@ void writeToResult(
     DO_IF_NOT_RANK0 return;
     R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
         + ( end_time.tv_usec - start_time.tv_usec )/1e6;
-    std::fstream resultFile( "pagerank.result", std::ios::out );
+    std::fstream resultFile( "pagerank.result.parallel", std::ios::out );
     resultFile << "time: " <<  time_taken << "s\n";
     std::cout << "DEBUG: time: " << time_taken << "s\n";
     Utils::writePageRank( resultFile, eigen_vect );
@@ -120,7 +120,8 @@ int mainMPI( int argc, char* argv[] )
     RVec output_vec( localmatrix->numRows() );
     timeval start_time, end_time;
     gettimeofday( &start_time, NULL);
-    PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec );
+    ConvergenceCriterion c;
+    PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec, c );
     gettimeofday( &end_time, NULL);
 
     RVec eigen_vec;
