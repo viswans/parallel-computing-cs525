@@ -66,17 +66,14 @@ void checkDataStructures( const PageRank::PreProcOutput& pre )
 }
 
 void writeToResult(
-    timeval start_time,
-    timeval end_time,
+    const PageRank::Timer& t,
     const PageRank::RVec& eigen_vect)
 {
     using namespace PageRank;
     DO_IF_NOT_RANK0 return;
-    R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
-        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
     std::fstream resultFile( "pagerank.result.parallel", std::ios::out );
-    resultFile << "time: " <<  time_taken << "s\n";
-    std::cout << "DEBUG: time: " << time_taken << "s\n";
+    resultFile << "time: " <<  t.getTimeSpent() << "s\n";
+    std::cout << "DEBUG: time: " << t.getTimeSpent() << "s\n";
     Utils::writePageRank( resultFile, eigen_vect );
 }
 
@@ -118,15 +115,15 @@ int mainMPI( int argc, char* argv[] )
     N num_orig_columns = part_info->num_columns_original_matrix;
     RVec initial_vec( num_nodes, 1.0/( num_orig_columns ) );
     RVec output_vec( localmatrix->numRows() );
-    timeval start_time, end_time;
-    gettimeofday( &start_time, NULL);
+    Timer t;
     ConvergenceCriterion c;
+    t.start();
     PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec, c );
-    gettimeofday( &end_time, NULL);
+    t.stop();
 
     RVec eigen_vec;
     assembleEigenVec( output_vec, num_orig_columns, partition_map, gather_disp, eigen_vec );
-    writeToResult( start_time, end_time, eigen_vec);
+    writeToResult( t, eigen_vec);
     return finalize();
 }
 

@@ -32,19 +32,17 @@ int mainSerial( int argc, char* argv[] )
     // fill initial vector with all equal values = 1/ncolumns
     N num_nodes = matrix->numColumns();
     RVec eigen_vect( num_nodes, 1.0/sqrt( num_nodes ) );
-    timeval start_time, end_time;
-    gettimeofday( &start_time, NULL);
+    Timer t;
     ConvergenceCriterion c;
+    t.start();
     PageRankSerial::calculatePageRank( *matrix, eigen_vect, c );
-    gettimeofday( &end_time, NULL);
+    t.stop();
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );
     // std::cout << "DEBUG: " << start_time.tv_sec << ' ' << start_time.tv_usec << "\n";
     // std::cout << "DEBUG: " << end_time.tv_sec << ' ' << end_time.tv_usec << "\n";
-    R time_taken = (  end_time.tv_sec - start_time.tv_sec ) +
-        + ( end_time.tv_usec - start_time.tv_usec )/1e6;
-    resultFile << "time: " <<  time_taken << "s\n";
-    std::cout << "DEBUG: time: " << time_taken << "s\n";
+    resultFile << "time: " <<  t.getTimeSpent() << "s\n";
+    std::cout << "DEBUG: time: " << t.getTimeSpent() << "s\n";
     Utils::writePageRank( resultFile, eigen_vect );
 
     return 0;

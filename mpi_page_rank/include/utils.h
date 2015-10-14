@@ -2,10 +2,24 @@
 #define __PAGERANK_UTILS__
 
 #include <types.h>
+#include <sys/time.h>
 
 namespace PageRank {
     const int defaultMaxIters = 1000;
     const double defaultTolerance = 1e-10;
+
+    // Stop watch
+    class Timer
+    {
+     public:
+        Timer(): time_spent(0) {}
+        void start();
+        void stop();
+        double getTimeSpent() const { return time_spent; }
+     private:
+        timeval start_time, end_time;
+        double time_spent;
+    };
 
     struct ConvergenceCriterion
     {

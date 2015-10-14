@@ -75,3 +75,16 @@ void Utils::calcCountFromDisp( const NVec& disp, N total, NVec& counts )
     counts[ sz-1 ] = total - disp[sz-1];
 }
 
+
+void Timer::start()
+{
+    gettimeofday( &start_time, NULL );
+}
+
+void Timer::stop()
+{
+    gettimeofday( &end_time, NULL );
+    time_spent += (  end_time.tv_sec - start_time.tv_sec ) +
+    + ( end_time.tv_usec - start_time.tv_usec )/1e6;
+}
+
