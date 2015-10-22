@@ -106,6 +106,8 @@ int mainMPI( int argc, char* argv[] )
         gather_disp.resize( partition->getNumPartitions() );
     }
 
+    Timer t;
+    t.start();
     PreProcOutput pre = PageRankMPI::preprocess( matrix, partition, partition_map, gather_disp );
     // checkDataStructures( pre );
     std::cout << "DEBUG: Preprocess done\n";
@@ -115,9 +117,7 @@ int mainMPI( int argc, char* argv[] )
     N num_orig_columns = part_info->num_columns_original_matrix;
     RVec initial_vec( num_nodes, 1.0/( num_orig_columns ) );
     RVec output_vec( localmatrix->numRows() );
-    Timer t;
     ConvergenceCriterion c;
-    t.start();
     PageRankMPI::calculatePageRank( *localmatrix, *part_info, initial_vec, output_vec, c );
     t.stop();
 
