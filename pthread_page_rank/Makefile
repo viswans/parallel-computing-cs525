@@ -1,5 +1,6 @@
 CXX          := g++
 CXXFLAGS     := -I include -std=c++11 -Wall  -O3 -lm
+PTHREADFLAGS := $(CXXFLAGS) -lpthread
 LD           := $(CXX)
 LDFLAGS      := $(CXXFLAGS)
 EXE          := pagerank.serial pagerank.parallel
@@ -26,7 +27,7 @@ pagerank.serial: $(CPP_OBJS) $(MAIN_SRC)
 	$(LD) $(LDFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.pth.o: $(PTHREAD_DIR)/%.cpp
-	$(PTHREADCXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(PTHREADFLAGS) -c -o $@ $<
 
 $(OBJ_DIR)/%.cpp.o: $(CPP_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
