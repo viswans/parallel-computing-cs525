@@ -3,7 +3,7 @@
 #include <fstream>
 #include <cmath>
 #include <sys/time.h>
-#include <pagerank.h>
+#include <pagerankPth.h>
 #include <utils.h>
 
 enum HelpTypes { eFormat, eFileNotExist };
@@ -14,7 +14,7 @@ int mainPthread( int argc, char* argv[] )
     if( argc != 2 ) { help(eFormat); return 0; }
     std::fstream graphFile(argv[1]);
     if( !graphFile ) { help(eFileNotExist); return 0; }
-    std::fstream resultFile( "pagerank.result.serial", std::ios::out );
+    std::fstream resultFile( "pagerank.result.pthread", std::ios::out );
 
     // enter page rank program
     using namespace PageRank;
@@ -22,11 +22,11 @@ int mainPthread( int argc, char* argv[] )
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
     N num_nodes = matrix->numColumns();
-    RVec eigen_vect( num_nodes, 1.0/sqrt( num_nodes ) );
+    RVec eigen_vect( num_nodes, 1.0 );
     Timer t;
     ConvergenceCriterion c;
     t.start();
-    PageRankSerial::calculatePageRank( *matrix, eigen_vect, c );
+    PageRankPthread::calculatePageRank( *matrix, eigen_vect, 16, c );
     t.stop();
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );

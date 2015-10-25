@@ -34,6 +34,15 @@ namespace PageRank {
         void multiply(
             const RVec& input_vector, RVec& output_vector ) const;
 
+        // Not good software practice!
+        // Ideally Matrix multiply functions must be split
+        // while the data holding responsibility must be handled
+        // here.
+        void multiplyPthread(
+            const RVec& input_vector,
+            N num_threads,
+            RVec& output_vector) const;
+
         std::shared_ptr< std::vector< CSRMatrixEntry > >
         getMatrixEntries() const { return entries; }
 
