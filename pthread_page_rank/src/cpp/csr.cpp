@@ -105,10 +105,12 @@ CSRMatrix::readFromStream( std::istream& iss  )
     sss >> temp;        // first string col_idx
     // std::cout << "DEBUG: Doing " << temp << "\n";
     N input1, i = 0, columns = 0;
+    RVec in_degree( entries_ptr->size() );
     for( ; sss >> input1 && i < entries_ptr->size(); ++i )
     {
         (*entries_ptr)[i].column_idx = input1;
         columns = ( columns < input1 ) ? input1: columns;
+        in_degree[input1] += (*entries_ptr)[i].value;
     }
 
     // number of column entries is same as number of values
@@ -123,6 +125,10 @@ CSRMatrix::readFromStream( std::istream& iss  )
     NVecPtr row_ptr( new NVec() );
     for( i = 0; sss >> input1; ++i )
         row_ptr->push_back( input1 );
+
+    // normalize columns
+    for( i = 0; i < entries_ptr->size(); ++i )
+        (*entries_ptr)[i].value /= in_degree[(*entries_ptr)[i].column_idx];
 
     ASSERT_EQUALS_MSG( row_ptr->size() - 1, columns + 1,
             "# Rows != # Columns. Page rank on a rect matrix?\n" );

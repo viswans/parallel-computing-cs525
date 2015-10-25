@@ -31,7 +31,7 @@ int mainSerial( int argc, char* argv[] )
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
     N num_nodes = matrix->numColumns();
-    RVec eigen_vect( num_nodes, 1.0/sqrt( num_nodes ) );
+    RVec eigen_vect( num_nodes, 1.0/num_nodes );
     Timer t;
     ConvergenceCriterion c;
     t.start();

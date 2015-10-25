@@ -19,7 +19,7 @@ void PageRankSerial::calculatePageRank (
     unsigned int i = 0;
     while( ++i < criterion.max_iterations ) {
         matrix.multiply( *(input_buf), *(output_buf) ) ;
-        Utils::normalize( *(output_buf) );
+        // Utils::normalize( *(output_buf) );
         toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";

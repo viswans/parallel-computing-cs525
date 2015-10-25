@@ -3,7 +3,7 @@ CXXFLAGS     := -I include -std=c++11 -Wall  -O3 -lm
 PTHREADFLAGS := $(CXXFLAGS) -lpthread
 LD           := $(CXX)
 LDFLAGS      := $(CXXFLAGS)
-EXE          := pagerank.serial pagerank.parallel
+EXE          := pagerank.serial #pagerank.parallel
 
 ## Add your source files here ##
 SRC_DIR      := src
