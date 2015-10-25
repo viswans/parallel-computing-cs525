@@ -45,10 +45,11 @@ void CSRMatrix::multiplyPthread(
 {
     pthread_t threads[num_threads];
     N start = 0, chunk_size = numRows()/num_threads + 1,
-      end = start + chunk_size;
+      end, rows = numRows();
     MultiplyPthread thread_objs[num_threads];
     for( N t = 0; t < num_threads ; ++t )
     {
+        end = std::min( start + chunk_size, rows );
         thread_objs[t].mat = this;
         thread_objs[t].input_vector = &input_vector;
         thread_objs[t].output_vector = &output_vector;
@@ -56,8 +57,6 @@ void CSRMatrix::multiplyPthread(
         thread_objs[t].end = end;
         thread_objs[t].tid = t;
         start = end + 1;
-        end = std::min( start + chunk_size, numRows() );
-
     }
     for( N t = 0; t < num_threads ; ++t ){
         N rc = pthread_create(&threads[t], NULL, multiplyChunk, (void *)(&thread_objs[t]));
@@ -66,6 +65,9 @@ void CSRMatrix::multiplyPthread(
             printf("ERROR; return code from pthread_create() is %d\n", rc);
             exit(-1);
         }
-        pthread_join( threads[t], NULL );
     }
+
+    // barrier
+    for( N t = 0; t < num_threads; ++t )
+        pthread_join( threads[t], NULL );
 }

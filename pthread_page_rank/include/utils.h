@@ -5,8 +5,8 @@
 #include <sys/time.h>
 
 namespace PageRank {
-    const int defaultMaxIters = 1000;
-    const double defaultTolerance = 1e-10;
+    const int defaultMaxIters = 2000;
+    const double defaultTolerance = 1e-5;
 
     // Stop watch
     class Timer
