@@ -14,7 +14,7 @@ int mainPthread( int argc, char* argv[] )
     if( argc != 2 ) { help(eFormat); return 0; }
     std::fstream graphFile(argv[1]);
     if( !graphFile ) { help(eFileNotExist); return 0; }
-    std::fstream resultFile( "pagerank.result.serial", std::ios::out );
+    std::fstream resultFile( "pagerank.result.pthread", std::ios::out );
 
     // enter page rank program
     using namespace PageRank;
@@ -26,7 +26,7 @@ int mainPthread( int argc, char* argv[] )
     Timer t;
     ConvergenceCriterion c;
     t.start();
-    PageRankPthread::calculatePageRank( matrix, eigen_vect, 16, c );
+    PageRankPthread::calculatePageRank( matrix, eigen_vect, 8, c );
     t.stop();
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );
