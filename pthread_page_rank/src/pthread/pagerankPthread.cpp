@@ -34,13 +34,13 @@ namespace {
         while( ++i < criterion.max_iterations ) {
             matrix.multiply( *(input_buf), *(output_buf) ) ;
             // Utils::normalize( *(output_buf) );
+            pthread_barrier_wait( &barr );
             if( tid == 0 ) {
                 toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
                 std::cout << "DEBUG: iterations = " << i <<
                     " toldiff = " << toldiff << "\n";
                 iters = i;
             }
-            pthread_barrier_wait( &barr );
             std::swap( input_buf, output_buf );
             if( toldiff <= criterion.tolerance ) break;
         };
@@ -65,9 +65,7 @@ void PageRankPthread::calculatePageRank (
     toldiff = 1e5;
     RVec *input_buf =  new RVec( input );
     RVec *output_buf =  new RVec( input.size() );
-
-    const NVec* row_ptr = matrix->getRowPtr().get();
-    const std::vector< CSRMatrixEntry >* entries = matrix->getMatrixEntries().get();
+    const CSRMatrix* matrix_ptr = matrix.get();
 
     pthread_t threads[num_threads];
     std::vector< ThreadStruct > tstruct;
@@ -77,7 +75,7 @@ void PageRankPthread::calculatePageRank (
     for( N i = 0; i < num_threads; ++i )
     {
         N end = std::min( start + chunk, rows );
-        tstruct.push_back( ThreadStruct( i, CSRMatrixPthread( entries, row_ptr, start, end ),
+        tstruct.push_back( ThreadStruct( i, CSRMatrixPthread( matrix_ptr, start, end ),
                     criterion, input_buf, output_buf) );
         start = end ;
         pthread_create( &threads[i], NULL, pageRankIteration, &tstruct[i] );

@@ -13,12 +13,10 @@ namespace PageRank {
             const RVec& input_vector, RVec& output_vector ) const;
 
         CSRMatrixPthread(
-            const std::vector< CSRMatrixEntry >* entries_,
-            const NVec* row_ptr, N start_, N end_ );
+            const CSRMatrix* matrix, N start_, N end_ );
 
      private:
-        const std::vector< CSRMatrixEntry >* entries;
-        const NVec* row_ptr;
+        const CSRMatrix* matrix;
         N start_row, end_row;
     };
 
