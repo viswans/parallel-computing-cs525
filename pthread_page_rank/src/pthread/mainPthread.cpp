@@ -25,7 +25,7 @@ int mainPthread( int argc, char* argv[] )
     RVec eigen_vect( num_nodes, 1.0 );
     Timer t;
     t.start();
-    PageRankPthread::calculatePageRank( *matrix, eigen_vect, 2 );
+    PageRankPthread::calculatePageRank( matrix, eigen_vect, 2 );
     t.stop();
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );

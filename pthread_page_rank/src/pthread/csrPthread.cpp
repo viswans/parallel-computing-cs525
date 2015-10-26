@@ -56,7 +56,7 @@ void CSRMatrix::multiplyPthread(
         thread_objs[t].start = start;
         thread_objs[t].end = end;
         thread_objs[t].tid = t;
-        start = end + 1;
+        start = end;
     }
     for( N t = 0; t < num_threads ; ++t ){
         N rc = pthread_create(&threads[t], NULL, multiplyChunk, (void *)(&thread_objs[t]));
