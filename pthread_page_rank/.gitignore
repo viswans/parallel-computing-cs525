@@ -1,4 +1,5 @@
-pagerank*
-pagerank.result
+pagerank.result.*
+pagerank.serial
+pagerank.parallel
 graphs/*
 exe/
