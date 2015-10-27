@@ -1,5 +1,5 @@
 CXX          := g++
-CXXFLAGS     := -I include -std=c++11 -Wall  -g -lm
+CXXFLAGS     := -I include -std=c++11 -Wall  -O3 -lm
 PTHREADFLAGS := $(CXXFLAGS) -lpthread
 LD           := $(CXX)
 LDFLAGS      := $(CXXFLAGS)

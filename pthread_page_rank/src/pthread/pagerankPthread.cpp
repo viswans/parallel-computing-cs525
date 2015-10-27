@@ -78,8 +78,10 @@ void PageRankPthread::calculatePageRank (
         tstruct.push_back( ThreadStruct( i, CSRMatrixPthread( matrix_ptr, start, end ),
                     criterion, input_buf, output_buf) );
         start = end ;
-        pthread_create( &threads[i], NULL, pageRankIteration, &tstruct[i] );
     }
+
+    for( N i = 0; i < num_threads; ++i )
+        pthread_create( &threads[i], NULL, pageRankIteration, &tstruct[i] );
 
     for( N i = 0; i < num_threads; ++i )
         pthread_join( threads[i], NULL);
