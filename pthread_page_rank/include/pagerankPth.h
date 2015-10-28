@@ -1,5 +1,5 @@
-#ifndef __PAGERANK_PAGERANK__
-#define __PAGERANK_PAGERANK__
+#ifndef __PAGERANK_PAGERANKPTH__
+#define __PAGERANK_PAGERANKPTH__
 
 #include <csr.h>
 #include <utils.h>
