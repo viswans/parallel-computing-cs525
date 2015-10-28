@@ -27,6 +27,8 @@ namespace {
     };
 
     R toldiff, iters;
+    RVec* output;
+    RVec tol_threads;
 
     void ThreadStruct::doIteration()
     {
@@ -40,7 +42,9 @@ namespace {
                 std::cout << "DEBUG: iterations = " << i <<
                     " toldiff = " << toldiff << "\n";
                 iters = i;
+                output = output_buf;
             }
+            pthread_barrier_wait( &barr );
             std::swap( input_buf, output_buf );
             if( toldiff <= criterion.tolerance ) break;
         };
@@ -85,7 +89,7 @@ void PageRankPthread::calculatePageRank (
 
     for( N i = 0; i < num_threads; ++i )
         pthread_join( threads[i], NULL);
-    input = *(input_buf);
+    input = *(output);
 
     if( iters == criterion.max_iterations )
         std::cout << "DEBUG: Terminated because of maxiterations with " <<
