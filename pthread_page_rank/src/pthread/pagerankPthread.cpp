@@ -14,42 +14,57 @@ namespace {
 
     struct ThreadStruct
     {
-        N tid;
+        N tid, start, end;
         CSRMatrixPthread matrix;
         ConvergenceCriterion criterion;
         RVec* input_buf;
         RVec* output_buf;
-        ThreadStruct( N tid_, CSRMatrixPthread matrix_,
+        ThreadStruct( N tid_, N start_, N end_,
+                CSRMatrixPthread matrix_,
                 ConvergenceCriterion c_, RVec* ip,
-                RVec* op ): tid( tid_ ), matrix( matrix_ ), criterion( c_ ),
+                RVec* op ): tid( tid_ ), start( start_ ), end( end_ ),
+                matrix( matrix_ ), criterion( c_ ),
                 input_buf( ip ), output_buf( op ) {}
         void doIteration();
     };
 
-    R toldiff, iters;
+    R toldiff, iters, num_threads;
     RVec* output;
     RVec tol_threads;
+
+    R sumOfSquares( const RVec& input, N start, N end )
+    {
+        R sum = 0;
+        for( N i = start; i < end; ++i )
+            sum += (input[i]* input[i]);
+        return sum;
+    }
 
     void ThreadStruct::doIteration()
     {
         N i = 0;
-        R old_norm = 1e5, new_norm = 1e5;
+        R old_norm = 1e5, new_norm = 1e5, toldiff_local;
         while( ++i < criterion.max_iterations ) {
             matrix.multiply( *(input_buf), *(output_buf) ) ;
             // Utils::normalize( *(output_buf) );
+            tol_threads[tid] = sumOfSquares( *output_buf, start, end );
             pthread_barrier_wait( &barr );
-            if( tid == 0 ) {
-                new_norm = sqrt( Utils::sumOfSquares( *(output_buf) ));
-                toldiff = std::abs( new_norm - old_norm );
-                std::cout << "DEBUG: iterations = " << i <<
-                    " toldiff = " << toldiff << "\n";
-                iters = i;
-                output = output_buf;
-                old_norm = new_norm;
+            new_norm = 0;
+            for( N j = 0; j < num_threads; ++j )
+                new_norm += tol_threads[j];
+            new_norm = sqrt( new_norm );
+            toldiff_local = std::abs( new_norm - old_norm );
+            old_norm = new_norm;
+            pthread_barrier_wait( &barr );
+            if( toldiff_local <= criterion.tolerance ) {
+                if( tid == 0 ) {
+                    iters = i;
+                    output = output_buf;
+                    toldiff = toldiff_local;
+                }
+                break;
             }
-            pthread_barrier_wait( &barr );
             std::swap( input_buf, output_buf );
-            if( toldiff <= criterion.tolerance ) break;
         };
     }
 
@@ -75,6 +90,8 @@ void PageRankPthread::calculatePageRank (
     const CSRMatrix* matrix_ptr = matrix.get();
 
     pthread_t threads[num_threads];
+    ::num_threads = num_threads;
+    tol_threads.resize( num_threads );
     std::vector< ThreadStruct > tstruct;
     pthread_barrier_init( &barr, NULL, num_threads );
     N start = 0, rows = matrix->numRows();
@@ -82,7 +99,8 @@ void PageRankPthread::calculatePageRank (
     for( N i = 0; i < num_threads; ++i )
     {
         N end = std::min( start + chunk, rows );
-        tstruct.push_back( ThreadStruct( i, CSRMatrixPthread( matrix_ptr, start, end ),
+        tstruct.push_back( ThreadStruct( i, start, end,
+                    CSRMatrixPthread( matrix_ptr, start, end ),
                     criterion, input_buf, output_buf) );
         start = end ;
     }
