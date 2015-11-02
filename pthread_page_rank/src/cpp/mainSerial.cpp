@@ -12,7 +12,7 @@ void help( HelpTypes e )
     if( e == eFormat )
     {
         std::cout << "Format: ./pagerank.serial <graph.txt>\n";
-        std::cout << "Format: ./pagerank.parallel <graph.txt> <graph-partition.txt>\n";
+        std::cout << "Format: ./pagerank.parallel <graph.txt> <num_threads>\n";
     }
     else if( e == eFileNotExist )
         std::cout << "Error: Either graph file or partition file could not be opened\n";

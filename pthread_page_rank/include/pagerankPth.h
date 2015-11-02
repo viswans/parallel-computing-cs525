@@ -12,7 +12,7 @@ namespace PageRank {
         // calculate page rank and store it in
         // the given input vector
         static void calculatePageRank (
-            const CSRMatrix& matrix,
+            const CSRMatrix::CPtr& matrix,
             RVec& input,
             N num_threads,
             const ConvergenceCriterion& crit = ConvergenceCriterion());

@@ -6,7 +6,7 @@
 
 namespace PageRank {
     const int defaultMaxIters = 2000;
-    const double defaultTolerance = 1e-5;
+    const double defaultTolerance = 1e-7;
 
     // Stop watch
     class Timer

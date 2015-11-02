@@ -34,19 +34,10 @@ namespace PageRank {
         void multiply(
             const RVec& input_vector, RVec& output_vector ) const;
 
-        // Not good software practice!
-        // Ideally Matrix multiply functions must be split
-        // while the data holding responsibility must be handled
-        // here.
-        void multiplyPthread(
-            const RVec& input_vector,
-            N num_threads,
-            RVec& output_vector) const;
+        const std::vector< CSRMatrixEntry >*
+        getMatrixEntries() const { return entries_raw; }
 
-        std::shared_ptr< std::vector< CSRMatrixEntry > >
-        getMatrixEntries() const { return entries; }
-
-        NVecPtr getRowPtr() const { return row_ptr; }
+        const NVec* getRowPtr() const { return row_ptr_raw; }
 
      private:
         CSRMatrix(
@@ -57,6 +48,8 @@ namespace PageRank {
          unsigned int nrows, ncolumns;
          std::shared_ptr< std::vector<CSRMatrixEntry> > entries;
          NVecPtr row_ptr;
+         const std::vector< CSRMatrixEntry >* entries_raw;
+         const NVec* row_ptr_raw;
     };
 
 } // end namespace pagerank

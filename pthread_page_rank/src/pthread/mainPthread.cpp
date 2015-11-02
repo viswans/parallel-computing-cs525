@@ -11,21 +11,24 @@ void help( HelpTypes h );
 
 int mainPthread( int argc, char* argv[] )
 {
-    if( argc != 2 ) { help(eFormat); return 0; }
+    if( argc != 3 ) { help(eFormat); return 0; }
     std::fstream graphFile(argv[1]);
     if( !graphFile ) { help(eFileNotExist); return 0; }
     std::fstream resultFile( "pagerank.result.pthread", std::ios::out );
 
+
     // enter page rank program
     using namespace PageRank;
+    N num_threads = atoi( argv[2] );
     CSRMatrix::CPtr matrix( CSRMatrix::readFromStream( graphFile ) );
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
     N num_nodes = matrix->numColumns();
     RVec eigen_vect( num_nodes, 1.0/num_nodes );
     Timer t;
+    ConvergenceCriterion c;
     t.start();
-    PageRankPthread::calculatePageRank( *matrix, eigen_vect, 16 );
+    PageRankPthread::calculatePageRank( matrix, eigen_vect, num_threads, c );
     t.stop();
     // std::ofstream vec_dump( "vec1.out");
     // Utils::showVector( vec_dump, eigen_vect, "\n" );
