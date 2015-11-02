@@ -33,16 +33,19 @@ namespace {
     void ThreadStruct::doIteration()
     {
         N i = 0;
+        R old_norm = 1e5, new_norm = 1e5;
         while( ++i < criterion.max_iterations ) {
             matrix.multiply( *(input_buf), *(output_buf) ) ;
             // Utils::normalize( *(output_buf) );
             pthread_barrier_wait( &barr );
             if( tid == 0 ) {
-                toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
+                new_norm = sqrt( Utils::sumOfSquares( *(output_buf) ));
+                toldiff = std::abs( new_norm - old_norm );
                 std::cout << "DEBUG: iterations = " << i <<
                     " toldiff = " << toldiff << "\n";
                 iters = i;
                 output = output_buf;
+                old_norm = new_norm;
             }
             pthread_barrier_wait( &barr );
             std::swap( input_buf, output_buf );

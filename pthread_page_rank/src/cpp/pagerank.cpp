@@ -13,6 +13,7 @@ void PageRankSerial::calculatePageRank (
     const ConvergenceCriterion& criterion)
 {
     assert( matrix.numColumns() == input.size() );
+    R old_norm = 1e5, new_norm;
     double toldiff = 1e5;
     std::shared_ptr< RVec >
         input_buf( new RVec( input ) ), output_buf( new RVec( input.size() ) ), temp;
@@ -20,10 +21,12 @@ void PageRankSerial::calculatePageRank (
     while( ++i < criterion.max_iterations ) {
         matrix.multiply( *(input_buf), *(output_buf) ) ;
         // Utils::normalize( *(output_buf) );
-        toldiff = Utils::normOfDiff( *(input_buf), *(output_buf) );
+        new_norm = sqrt( Utils::sumOfSquares( *(output_buf) ));
+        toldiff = std::abs( new_norm - old_norm );
         std::cout << "DEBUG: iterations = " << i <<
             " toldiff = " << toldiff << "\n";
         std::swap( input_buf, output_buf );
+        old_norm = new_norm;
         if( toldiff <= criterion.tolerance ) break;
     };
     input = *(input_buf);
