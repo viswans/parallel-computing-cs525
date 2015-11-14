@@ -1,5 +1,5 @@
 pagerank.result.*
 pagerank.serial
 pagerank.parallel
-graphs/*
+graphs
 exe/
