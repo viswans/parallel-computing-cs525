@@ -21,8 +21,7 @@ CSRMatrix::CSRMatrix(
     std::shared_ptr< std::vector<CSRMatrixEntry> >& entries_,
     const NVecPtr& row_ptr_ )
     : nrows( nrows_ ), ncolumns( ncolumns_ ),
-      entries( entries_ ), row_ptr( row_ptr_ ),
-      entries_raw( entries.get() ), row_ptr_raw( row_ptr.get() )
+      entries( entries_ ), row_ptr( row_ptr_ )
 {
     ASSERT_EQUALS( nrows, row_ptr_->size() - 1);
     writeToStream( std::cout  );

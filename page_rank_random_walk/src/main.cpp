@@ -28,15 +28,14 @@ int main( int argc, char* argv[] )
     if( !graphFile ) { help(eFileNotExist); return 0; }
     std::fstream resultFile( "randomwalk.result", std::ios::out );
 
-    AdjacencyList::CPtr adj_list = AdjacencyList::create(
-            CSRMatrix::readFromStream( graphFile ) );
+    CSRMatrix::CPtr matrix = CSRMatrix::readFromStream( graphFile );
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
-    N num_nodes = adj_list->getNumNodes();
+    N num_nodes = matrix->getNumNodes();
     NVec counter( num_nodes, 0 );
     Timer t;
     t.start();
-    RandomWalker::walk( adj_list, num_iters, num_threads, counter);
+    RandomWalker::walk( matrix, num_iters, num_threads, counter);
     t.stop();
     resultFile << "time: " <<  t.getTimeSpent() << "s\n";
     std::cout << "DEBUG: time: " << t.getTimeSpent() << "s\n";

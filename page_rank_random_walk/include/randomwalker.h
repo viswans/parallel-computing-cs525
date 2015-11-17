@@ -9,7 +9,7 @@ namespace PageRank {
     {
      public:
         static void walk(
-            const AdjacencyList::CPtr& adj_list,
+            const CSRMatrix::CPtr& matrix,
             N num_iterations,
             N num_threads,
             NVec& counter);
