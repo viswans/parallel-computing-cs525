@@ -34,14 +34,10 @@ namespace PageRank {
         void multiply(
             const RVec& input_vector, RVec& output_vector ) const;
 
-        N numNeighbours( N i ) const { return (*row_ptr)[i+1] - (*row_ptr)[i] ; }
-        N getNthNeighbour( N i, N n ) const { return (*entries)[ (*row_ptr)[i] + n ].column_idx; }
-        N getNumNodes() const { return numRows(); }
-
-        const NVec* getRowPtr() const { return row_ptr.get();  }
         const std::vector< CSRMatrixEntry >*
-            getMatrixEntries() const { return entries.get(); }
+        getMatrixEntries() const { return entries_raw; }
 
+        const NVec* getRowPtr() const { return row_ptr_raw; }
 
      private:
         CSRMatrix(
@@ -52,6 +48,8 @@ namespace PageRank {
          unsigned int nrows, ncolumns;
          std::shared_ptr< std::vector<CSRMatrixEntry> > entries;
          NVecPtr row_ptr;
+         const std::vector< CSRMatrixEntry >* entries_raw;
+         const NVec* row_ptr_raw;
     };
 
 } // end namespace pagerank

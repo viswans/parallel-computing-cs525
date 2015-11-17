@@ -10,26 +10,25 @@ typedef N NodeId;
 
 NodeId walkNext(
     NodeId start,
-    const CSRMatrix::CPtr& matrix,
-    N& seed)
+    const AdjacencyList::CPtr& list,
+    std::mt19937& gen)
 {
-    // std::uniform_int_distribution<N> dist( 0, matrix->numNeighbours(start)-1 );
-    N rand_num = rand_r( &seed ) % matrix->numNeighbours( start );
-    return matrix->getNthNeighbour( start, rand_num );
+    std::uniform_int_distribution<N> dist( 0, list->numNeigbours(start)-1 );
+    N rand_num = dist(gen);
+    return list->getNthNeighbour( start, rand_num );
 }
 
 void walkBetween(
         N start_node, N end_node,
-        const CSRMatrix::CPtr& matrix,
+        const AdjacencyList::CPtr& adj_list,
         N num_iterations,
         NVec& counter)
 {
-    if (counter.size() != matrix->getNumNodes())
-        counter.resize( matrix->getNumNodes() );
+    if (counter.size() != adj_list->getNumNodes())
+        counter.resize( adj_list->getNumNodes() );
 
-    // std::random_device rd;
-    // std::mt19937 gen(rd());
-    N seed = rand() % 128;
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
     for( NodeId n = start_node; n < end_node; ++n  )
     {
@@ -37,7 +36,7 @@ void walkBetween(
         for( N iters = 0; iters < num_iterations; ++iters )
         {
             // std::cout << "DEBUG: Iteration = " << iters << "\n";
-            next = walkNext( next, matrix, seed);
+            next = walkNext( next, adj_list, gen);
             counter[next]++;
         }
     }
@@ -45,14 +44,14 @@ void walkBetween(
 
 struct ThreadStruct {
     NodeId start, end;
-    CSRMatrix::CPtr matrix;
+    AdjacencyList::CPtr list;
     N num_iterations;
     NVec* counter;
-    ThreadStruct( NodeId s_, NodeId e_, const CSRMatrix::CPtr& m_,
+    ThreadStruct( NodeId s_, NodeId e_, const AdjacencyList::CPtr& l_,
             N niters_, NVec& c_):
-        start(s_), end(e_), matrix(m_), num_iterations( niters_ ), counter( &c_ ) {}
+        start(s_), end(e_), list(l_), num_iterations( niters_ ), counter( &c_ ) {}
     void walk() {
-        walkBetween( start, end, matrix, num_iterations, *counter);
+        walkBetween( start, end, list, num_iterations, *counter);
     }
 };
 
@@ -66,16 +65,15 @@ void* walkThreads( void* input )
 } // end of anon namespace
 
 void RandomWalker::walk(
-    const CSRMatrix::CPtr& matrix,
+    const AdjacencyList::CPtr& adj_list,
     N num_iterations,
     N num_threads,
     NVec& counter )
 {
-    N num_nodes = matrix->getNumNodes();
-    srand (time(NULL));
+    N num_nodes = adj_list->getNumNodes();
     if( num_threads == 0 )
     {
-        walkBetween( 0, num_nodes, matrix, num_iterations, counter );
+        walkBetween( 0, num_nodes, adj_list, num_iterations, counter );
         return;
     }
 
@@ -86,7 +84,7 @@ void RandomWalker::walk(
     for( N i = 0; i < num_threads; ++i )
     {
         N end = std::min( start + chunk_size, num_nodes );
-        ts.push_back(ThreadStruct( start, end, matrix, num_iterations, counter ));
+        ts.push_back(ThreadStruct( start, end, adj_list, num_iterations, counter ));
         start = end;
     }
     for( N i = 0; i < num_threads; ++i )
