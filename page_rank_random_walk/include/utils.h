@@ -45,7 +45,7 @@ namespace PageRank {
         }
         static void writePageRank(
                 std::ostream& oss,
-                const RVec& page_rank_weight );
+                const NVec& page_rank_weight );
 
         static R sumOfSquares( const RVec& input );
         // normOfDiff only for vectors of same size

@@ -1,4 +1,6 @@
 
+#include <randomwalker.h>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <cmath>
@@ -11,8 +13,7 @@ void help( HelpTypes e )
 {
     if( e == eFormat )
     {
-        std::cout << "Format: ./pagerank.serial <graph.txt>\n";
-        std::cout << "Format: ./pagerank.parallel <graph.txt> <num_threads>\n";
+        std::cout << "Format: ./randomwalker <graph.txt> <num_iterations> <num_threads>\n";
     }
     else if( e == eFileNotExist )
         std::cout << "Error: Either graph file or partition file could not be opened\n";
@@ -20,29 +21,26 @@ void help( HelpTypes e )
 
 int main( int argc, char* argv[] )
 {
-    if( argc != 2 ) { help(eFormat); return 0; }
-    std::fstream graphFile(argv[1]);
-    if( !graphFile ) { help(eFileNotExist); return 0; }
-    std::fstream resultFile( "pagerank.result.serial", std::ios::out );
-
-    // enter page rank program
     using namespace PageRank;
-    CSRMatrix::CPtr matrix( CSRMatrix::readFromStream( graphFile ) );
+    if( argc != 4 ) { help(eFormat); return 0; }
+    std::fstream graphFile(argv[1]);
+    N num_iters = atoi( argv[2] ), num_threads = atoi( argv[3] );
+    if( !graphFile ) { help(eFileNotExist); return 0; }
+    std::fstream resultFile( "randomwalk.result", std::ios::out );
+
+    AdjacencyList::CPtr adj_list = AdjacencyList::create(
+            CSRMatrix::readFromStream( graphFile ) );
     // std::cout << "DEBUG: Matrix was succesfully read into DS\n";
     // fill initial vector with all equal values = 1/ncolumns
-    N num_nodes = matrix->numColumns();
-    RVec eigen_vect( num_nodes, 1.0/num_nodes );
+    N num_nodes = adj_list->getNumNodes();
+    NVec counter( num_nodes, 0 );
     Timer t;
     t.start();
-    // PageRankSerial::calculatePageRank( *matrix, eigen_vect );
+    RandomWalker::walk( adj_list, num_iters, num_threads, counter);
     t.stop();
-    // std::ofstream vec_dump( "vec1.out");
-    // Utils::showVector( vec_dump, eigen_vect, "\n" );
-    // std::cout << "DEBUG: " << start_time.tv_sec << ' ' << start_time.tv_usec << "\n";
-    // std::cout << "DEBUG: " << end_time.tv_sec << ' ' << end_time.tv_usec << "\n";
     resultFile << "time: " <<  t.getTimeSpent() << "s\n";
     std::cout << "DEBUG: time: " << t.getTimeSpent() << "s\n";
-    Utils::writePageRank( resultFile, eigen_vect );
+    Utils::writePageRank( resultFile, counter );
 
     return 0;
 }
