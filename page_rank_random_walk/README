@@ -1,0 +1,6 @@
+
+Randomwalker code can be run with
+./randomwalker <graph input> <num steps in random walk> <num threads>
+
+If num threads is 0, it uses a pure serial implementation
+Efficiency max at 32 threads
